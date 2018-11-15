@@ -96,6 +96,12 @@ namespace Rock.Model
 
         #region Virtual Properties
 
+        /// <summary>
+        /// Gets or sets the registration template fee.
+        /// </summary>
+        /// <value>
+        /// The registration template fee.
+        /// </value>
         [LavaInclude]
         public virtual RegistrationTemplateFee RegistrationTemplateFee { get; set; }
 

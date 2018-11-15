@@ -371,7 +371,7 @@
                                     <ItemTemplate>
                                         <div class="row">
                                             <div class="col-xs-4"><%# Eval("Name") %></div>
-                                            <div class="col-xs-8"><%# FormatFeeCost( Eval("CostValue").ToString() ) %></div>
+                                            <div class="col-xs-8"><%# FormatFeeItems( Eval("FeeItems") as ICollection<Rock.Model.RegistrationTemplateFeeItem> ) %></div>
                                         </div>
                                     </ItemTemplate>
                                 </asp:Repeater>
@@ -476,23 +476,25 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockRadioButtonList ID="rblFeeType" runat="server" Label="Options" ValidationGroup="Fee" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="rblFeeType_SelectedIndexChanged" />
-                        <Rock:RockControlWrapper ID="rcwFeeItems" runat="server" Label="Fee">
-                            <asp:Repeater id="rptFeeItems" runat="server">
+                        <Rock:RockControlWrapper ID="rcwFeeItemsSingle" runat="server" Label="">
+                            <Rock:CurrencyBox ID="cbFeeItemSingleCost" runat="server" Label="Cost" ValidationGroup="Fee" />
+                            <Rock:NumberBox ID="nbFeeItemSingleMaximumUsageCount" runat="server" Label="Maximum Available" Help="The maximum number of times this fee can be used per registration instance." ValidationGroup="Fee" />
+                        </Rock:RockControlWrapper>
+                        <Rock:RockControlWrapper ID="rcwFeeItemsMultiple" runat="server" Label="Costs" Help="Enter the name, cost, and the maximum number of times this fee can be used per registration instance.">
+                            <asp:Repeater id="rptFeeItemsMultiple" runat="server" OnItemDataBound="rptFeeItemsMultiple_ItemDataBound">
                                 <ItemTemplate>
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <Rock:RockTextBox ID="tbFeeItemName" runat="server" Label="Name" />
-                                        </div>
-                                        <div class="col-md-4">
-
-                                        </div>
-                                        <div class="col-md-4">
-
-                                        </div>
+                                    <div class="controls controls-row form-control-group margin-b-sm">
+                                        <Rock:RockTextBox ID="tbFeeItemName" runat="server" CssClass="input-width-md" Placeholder="Option" ValidationGroup="Fee"/>
+                                        <Rock:CurrencyBox ID="cbFeeItemCost" runat="server" CssClass="input-width-md"  Placeholder="Cost" ValidationGroup="Fee" />
+                                        <Rock:NumberBox ID="nbMaximumUsageCount" runat="server" CssClass="input-width-md" Placeholder="Max Available" ValidationGroup="Fee" />
+                                        <asp:LinkButton ID="btnDeleteFeeItem" runat="server" CssClass="btn btn-danger btn-sm" OnClick="btnDeleteFeeItem_Click"><i class="fa fa-times"></i></asp:LinkButton>
                                     </div>
                                 </ItemTemplate>
                             </asp:Repeater>
                         </Rock:RockControlWrapper>
+                        <div class="actions">
+                            <asp:LinkButton ID="btnAddFeeItem" runat="server" CssClass="btn btn-action btn-sm" OnClick="btnAddFeeItem_Click"><i class="fa fa-plus-circle"></i></asp:LinkButton>
+                        </div>
                     </div>
                     <div class="col-md-3">
                         <Rock:RockCheckBox ID="cbAllowMultiple" runat="server" Label="Enable Quantity" ValidationGroup="Fee" Text="Yes" Help="Should registrants be able to select more than one of this item?" CssClass="form-check" />

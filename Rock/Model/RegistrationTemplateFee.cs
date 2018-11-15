@@ -67,7 +67,7 @@ namespace Rock.Model
         public RegistrationFeeType FeeType { get; set; }
 
         /// <summary>
-        /// Gets or sets the cost(s) of the fee. Value is stored like: single = 20, multiple = L|20,XL|20,XXL|25
+        /// Gets or sets the cost(s) of the fee. Value is stored like: single = 20, multiple = L|20,XL|20,XXL|25 or Small^10|Medium^20|Large^30|XXL^40
         /// </summary>
         /// <value>
         /// The discount amount.
@@ -144,7 +144,8 @@ namespace Rock.Model
         /// The fee items.
         /// </value>
         [LavaInclude]
-        public ICollection<RegistrationTemplateFeeItem> FeeItems { get; set; } = new List<RegistrationTemplateFeeItem>();
+        [DataMember]
+        public virtual ICollection<RegistrationTemplateFeeItem> FeeItems { get; set; } = new List<RegistrationTemplateFeeItem>();
 
         #endregion
 
@@ -185,7 +186,7 @@ namespace Rock.Model
     #region Enumerations
 
     /// <summary>
-    /// Flag for how person details should be displayed/required by user
+    /// Flag for how fee items should be displayed/required by user
     /// </summary>
     public enum RegistrationFeeType
     {

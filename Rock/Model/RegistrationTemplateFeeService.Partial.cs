@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Rock.Model
 {
@@ -107,6 +108,70 @@ namespace Rock.Model
             }
 
             return options;
+        }
+
+        /// <summary>
+        /// Migrates registrationTemplateFee.CostValue (string) to registrationTemplateFee.FeeItems (List of RegistrationTemplateFeeItem)
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registrationTemplateFeeService">The registration template fee service.</param>
+        [RockObsolete( "1.9" )]
+        [Obsolete( "This is only needed to migrate the obsolete CostValue to FeeItems" )]
+        public void MigrateFeeCostValueToFeeItems()
+        {
+            var registrationTemplateFeeItemService = new Rock.Model.RegistrationTemplateFeeItemService( this.Context as Rock.Data.RockContext );
+
+            var registrationTemplateFeeCostValueToConvertList = this.Queryable().Where( a => a.CostValue != null ).ToList();
+            foreach ( var registrationTemplateFee in registrationTemplateFeeCostValueToConvertList )
+            {
+                if ( registrationTemplateFee.FeeType == Model.RegistrationFeeType.Single )
+                {
+                    var registrationTemplateFeeItem = new Rock.Model.RegistrationTemplateFeeItem();
+                    registrationTemplateFeeItem.RegistrationTemplateFeeId = registrationTemplateFee.Id;
+                    registrationTemplateFeeItem.Name = "Fee";
+                    registrationTemplateFeeItem.Cost = registrationTemplateFee.CostValue.AsDecimalOrNull() ?? 0;
+                    registrationTemplateFeeItemService.Add( registrationTemplateFeeItem );
+
+                    // now that we've migrated to registrationTemplateFeeItem, set CostValue to null
+                    registrationTemplateFee.CostValue = null;
+                }
+                else if ( registrationTemplateFee.FeeType == Model.RegistrationFeeType.Multiple )
+                {
+                    var values = new List<string>();
+
+                    string[] costValueItems = registrationTemplateFee.CostValue.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                    int feeItemOrder = 0;
+                    foreach ( string costValue in costValueItems )
+                    {
+                        string[] costValueParts = costValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                        var registrationTemplateFeeItem = new Rock.Model.RegistrationTemplateFeeItem();
+                        registrationTemplateFeeItem.RegistrationTemplateFeeId = registrationTemplateFee.Id;
+                        registrationTemplateFeeItem.Order = feeItemOrder;
+                        feeItemOrder++;
+                        if ( costValueParts.Length == 2 )
+                        {
+                            // if split into 2 parts, it is in the format Name^Cost
+                            registrationTemplateFeeItem.Name = costValueParts[0]?.Trim().Truncate( 100 );
+                            registrationTemplateFeeItem.Cost = costValueParts[1].AsDecimalOrNull() ?? 0;
+                        }
+                        else
+                        {
+                            // if not split, it is just the cost
+                            registrationTemplateFeeItem.Cost = costValue.AsDecimalOrNull() ?? 0;
+                        }
+
+                        if ( string.IsNullOrWhiteSpace( registrationTemplateFeeItem.Name ) )
+                        {
+                            registrationTemplateFeeItem.Name = "Fee";
+                        }
+
+                        registrationTemplateFeeItemService.Add( registrationTemplateFeeItem );
+                    }
+
+                    // now that we've migrated to registrationTemplateFeeItem, set CostValue to null
+                    registrationTemplateFee.CostValue = null;
+                }
+            }
         }
 
         /// <summary>
