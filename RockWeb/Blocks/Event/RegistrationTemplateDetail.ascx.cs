@@ -1905,7 +1905,7 @@ The first registrant's information will be used to complete the registrar inform
             {
                 RegistrationTemplateFeeItem registrationTemplateFeeItem = new RegistrationTemplateFeeItem();
                 registrationTemplateFeeItem.Name = "Fee";
-                registrationTemplateFeeItem.Cost = cbFeeItemSingleCost.Text.AsDecimal();
+                registrationTemplateFeeItem.Cost = cbFeeItemSingleCost.Value ?? 0.00M;
                 registrationTemplateFeeItem.MaximumUsageCount = nbFeeItemSingleMaximumUsageCount.Text.AsIntegerOrNull();
                 fee.FeeItems.Add( registrationTemplateFeeItem );
             }
@@ -1919,7 +1919,7 @@ The first registrant's information will be used to complete the registrar inform
                     var nbMaximumUsageCount = item.FindControl( "nbMaximumUsageCount" ) as NumberBox;
 
                     registrationTemplateFeeItem.Name = tbFeeItemName.Text;
-                    registrationTemplateFeeItem.Cost = cbFeeItemCost.Text.AsDecimal();
+                    registrationTemplateFeeItem.Cost = cbFeeItemCost.Value ?? 0.00M;
                     registrationTemplateFeeItem.MaximumUsageCount = nbMaximumUsageCount.Text.AsIntegerOrNull();
                     fee.FeeItems.Add( registrationTemplateFeeItem );
                 }
@@ -2922,14 +2922,56 @@ The first registrant's information will be used to complete the registrar inform
             RegistrationTemplateFeeItem registrationTemplateFeeItem = e.Item.DataItem as RegistrationTemplateFeeItem;
             if ( registrationTemplateFeeItem != null)
             {
+                var hfFeeItemGuid = e.Item.FindControl("hfFeeItemGuid") as HiddenField;
                 var tbFeeItemName = e.Item.FindControl( "tbFeeItemName" ) as RockTextBox;
                 var cbFeeItemCost = e.Item.FindControl( "cbFeeItemCost" ) as CurrencyBox;
                 var nbMaximumUsageCount = e.Item.FindControl( "nbMaximumUsageCount" ) as NumberBox;
 
+                hfFeeItemGuid.Value = registrationTemplateFeeItem.Guid.ToString();
                 tbFeeItemName.Text = registrationTemplateFeeItem.Name;
-                cbFeeItemCost.Text = registrationTemplateFeeItem.Cost.ToString();
+
+                // if the Cost is 0 (vs 0.00M), set the text to blank since they haven't entered a value
+                if ( registrationTemplateFeeItem.Cost.ToString() == "0" )
+                {
+                    cbFeeItemCost.Text = string.Empty;
+                }
+                else
+                {
+                    cbFeeItemCost.Text = registrationTemplateFeeItem.Cost.ToString();
+                }
+                
                 nbMaximumUsageCount.Text = registrationTemplateFeeItem.MaximumUsageCount.ToString();
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDeleteFeeItem control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDeleteFeeItem_Click(object sender, EventArgs e)
+        {
+            Guid feeGuid = hfFeeGuid.Value.AsGuid();
+            var fee = FeeState.FirstOrDefault(d => d.Guid.Equals(feeGuid));
+
+            var hfFeeItemGuid = (sender as Control).NamingContainer.FindControl("hfFeeItemGuid") as HiddenField;
+            var feeItemGuid = hfFeeItemGuid.Value.AsGuid();
+            var feeItem = fee.FeeItems.FirstOrDefault(a => a.Guid == feeItemGuid);
+            fee.FeeItems.Remove(feeItem);
+            BindFeeItemsControls(fee, rblFeeType.SelectedValueAsEnum<RegistrationFeeType>());
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnAddFeeItem control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnAddFeeItem_Click(object sender, EventArgs e)
+        {
+            Guid feeGuid = hfFeeGuid.Value.AsGuid();
+            var fee = FeeState.FirstOrDefault(d => d.Guid.Equals(feeGuid));
+            fee.FeeItems.Add(new RegistrationTemplateFeeItem());
+            BindFeeItemsControls(fee, rblFeeType.SelectedValueAsEnum<RegistrationFeeType>());
         }
 
         /// <summary>
@@ -2953,6 +2995,7 @@ The first registrant's information will be used to complete the registrar inform
 
             return feeItemsHtml.AsDelimited( ", " );
         }
+
 
         #endregion
 
@@ -3013,20 +3056,5 @@ The first registrant's information will be used to complete the registrar inform
         #endregion
 
         #endregion
-
-
-
-        protected void btnDeleteFeeItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        protected void btnAddFeeItem_Click(object sender, EventArgs e)
-        {
-            Guid feeGuid = hfFeeGuid.Value.AsGuid();
-            var fee = FeeState.FirstOrDefault(d => d.Guid.Equals(feeGuid));
-            fee.FeeItems.Add(new RegistrationTemplateFeeItem());
-            BindFeeItemsControls(fee, rblFeeType.SelectedValueAsEnum<RegistrationFeeType>());
-        }
     }
 }

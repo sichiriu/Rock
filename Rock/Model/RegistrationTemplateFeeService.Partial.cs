@@ -113,8 +113,6 @@ namespace Rock.Model
         /// <summary>
         /// Migrates registrationTemplateFee.CostValue (string) to registrationTemplateFee.FeeItems (List of RegistrationTemplateFeeItem)
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="registrationTemplateFeeService">The registration template fee service.</param>
         [RockObsolete( "1.9" )]
         [Obsolete( "This is only needed to migrate the obsolete CostValue to FeeItems" )]
         public void MigrateFeeCostValueToFeeItems()
