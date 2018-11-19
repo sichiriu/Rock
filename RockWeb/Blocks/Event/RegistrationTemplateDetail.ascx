@@ -478,6 +478,7 @@
                     <div class="col-md-6">
                         <Rock:RockRadioButtonList ID="rblFeeType" runat="server" Label="Options" ValidationGroup="Fee" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="rblFeeType_SelectedIndexChanged" />
                         <Rock:RockControlWrapper ID="rcwFeeItemsSingle" runat="server" Label="">
+                            <asp:HiddenField ID="hfFeeItemSingleGuid" runat="server" />
                             <Rock:CurrencyBox ID="cbFeeItemSingleCost" runat="server" Label="Cost" ValidationGroup="Fee" />
                             <Rock:NumberBox ID="nbFeeItemSingleMaximumUsageCount" runat="server" Label="Maximum Available" Help="The maximum number of times this fee can be used per registration instance." ValidationGroup="Fee" />
                         </Rock:RockControlWrapper>
@@ -486,7 +487,10 @@
                                 <ItemTemplate>
                                     <div class="controls controls-row form-control-group margin-b-sm">
                                         <asp:HiddenField ID="hfFeeItemGuid" runat="server" />
-                                        <Rock:RockTextBox ID="tbFeeItemName" runat="server" CssClass="input-width-md" Placeholder="Option" ValidationGroup="Fee" Required="false"/>
+                                        <asp:Panel ID="pnlFeeItemNameContainer" runat="server">
+                                            <Rock:NotificationBox ID="nbFeeItemWarning" runat="server" NotificationBoxType="Default" />
+                                            <Rock:RockTextBox ID="tbFeeItemName" runat="server" CssClass="input-width-md" Placeholder="Option" ValidationGroup="Fee" Required="true"/>
+                                        </asp:Panel>
                                         <Rock:CurrencyBox ID="cbFeeItemCost" runat="server" CssClass="input-width-md"  Placeholder="Cost" ValidationGroup="Fee" NumberType="Currency" Required="false" />
                                         <Rock:NumberBox ID="nbMaximumUsageCount" runat="server" CssClass="input-width-md" Placeholder="Max Available" ValidationGroup="Fee" Required="false" NumberType="Integer" />
                                         <asp:LinkButton ID="btnDeleteFeeItem" runat="server" CssClass="btn btn-danger btn-sm" OnClick="btnDeleteFeeItem_Click"><i class="fa fa-times"></i></asp:LinkButton>

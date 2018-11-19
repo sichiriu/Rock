@@ -368,6 +368,11 @@ namespace RockWeb.Blocks.Event
 
         private List<RegistrationTemplateFee> FeeState { get; set; }
 
+        /// <summary>
+        /// The State of the RegistrationTemplateFeeItems in the Fees Dialog while it is being edited
+        /// </summary>
+        private List<RegistrationTemplateFeeItem> FeeItemsEditState { get; set; }
+
         private int? GridFieldsDeleteIndex { get; set; }
 
         #endregion
@@ -426,6 +431,16 @@ namespace RockWeb.Blocks.Event
             else
             {
                 FeeState = JsonConvert.DeserializeObject<List<RegistrationTemplateFee>>( json );
+            }
+
+            json = ViewState["FeeItemsEditState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                FeeItemsEditState = new List<RegistrationTemplateFeeItem>();
+            }
+            else
+            {
+                FeeItemsEditState = JsonConvert.DeserializeObject<List<RegistrationTemplateFeeItem>>( json );
             }
 
             BuildControls( false );
@@ -585,9 +600,15 @@ The first registrant's information will be used to complete the registrar inform
             ViewState["DiscountState"] = JsonConvert.SerializeObject( DiscountState, Formatting.None, jsonSetting );
             ViewState["FeeState"] = JsonConvert.SerializeObject( FeeState, Formatting.None, jsonSetting );
 
+            ViewState["FeeItemsEditState"] = JsonConvert.SerializeObject( FeeItemsEditState, Formatting.None, jsonSetting );
+
             return base.SaveViewState();
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnPreRender( EventArgs e )
         {
             if ( pnlEditDetails.Visible )
@@ -933,6 +954,7 @@ The first registrant's information will be used to complete the registrar inform
                 var registrationTemplateFormFieldService = new RegistrationTemplateFormFieldService( rockContext );
                 var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
                 var registrationTemplateFeeService = new RegistrationTemplateFeeService( rockContext );
+                var registrationTemplateFeeItemService = new RegistrationTemplateFeeItemService( rockContext );
                 var registrationRegistrantFeeService = new RegistrationRegistrantFeeService( rockContext );
 
                 var groupService = new GroupService( rockContext );
@@ -1131,7 +1153,31 @@ The first registrant's information will be used to complete the registrar inform
 
                     fee.Name = feeUI.Name;
                     fee.FeeType = feeUI.FeeType;
-                    fee.FeeItems = feeUI.FeeItems;
+
+                    // delete any feeItems no longer defined
+                    foreach ( var deletedFeeItem in fee.FeeItems.ToList().Where( a => !feeUI.FeeItems.Any( x => x.Guid == a.Guid ) ) )
+                    {
+                        registrationTemplateFeeItemService.Delete( deletedFeeItem );
+                    }
+
+                    // add any new feeItems
+                    foreach ( var newFeeItem in feeUI.FeeItems.ToList().Where( a => !fee.FeeItems.Any( x => x.Guid == a.Guid ) ) )
+                    {
+                        newFeeItem.RegistrationTemplateFee = fee;
+                        newFeeItem.RegistrationTemplateFeeId = fee.Id;
+                        registrationTemplateFeeItemService.Add( newFeeItem );
+                    }
+
+                    // update feeItems to match
+                    foreach ( var feeItem in fee.FeeItems )
+                    {
+                        var feeItemUI = feeUI.FeeItems.FirstOrDefault( x => x.Guid == feeItem.Guid );
+                        feeItem.Order = feeItemUI.Order;
+                        feeItem.Name = feeItemUI.Name;
+                        feeItem.Cost = feeItemUI.Cost;
+                        feeItem.MaximumUsageCount = feeItemUI.MaximumUsageCount;
+                    }
+
                     fee.DiscountApplies = feeUI.DiscountApplies;
                     fee.AllowMultiple = feeUI.AllowMultiple;
                     fee.Order = feeUI.Order;
@@ -1904,6 +1950,7 @@ The first registrant's information will be used to complete the registrar inform
             if ( fee.FeeType == RegistrationFeeType.Single )
             {
                 RegistrationTemplateFeeItem registrationTemplateFeeItem = new RegistrationTemplateFeeItem();
+                registrationTemplateFeeItem.Guid = hfFeeItemSingleGuid.Value.AsGuid();
                 registrationTemplateFeeItem.Name = "Fee";
                 registrationTemplateFeeItem.Cost = cbFeeItemSingleCost.Value ?? 0.00M;
                 registrationTemplateFeeItem.MaximumUsageCount = nbFeeItemSingleMaximumUsageCount.Text.AsIntegerOrNull();
@@ -1911,17 +1958,11 @@ The first registrant's information will be used to complete the registrar inform
             }
             else
             {
-                foreach ( var item in rptFeeItemsMultiple.Items.OfType<RepeaterItem>() )
-                {
-                    RegistrationTemplateFeeItem registrationTemplateFeeItem = new RegistrationTemplateFeeItem();
-                    var tbFeeItemName = item.FindControl( "tbFeeItemName" ) as RockTextBox;
-                    var cbFeeItemCost = item.FindControl( "cbFeeItemCost" ) as CurrencyBox;
-                    var nbMaximumUsageCount = item.FindControl( "nbMaximumUsageCount" ) as NumberBox;
+                fee.FeeItems = GetFeeItemsFromUI();
 
-                    registrationTemplateFeeItem.Name = tbFeeItemName.Text;
-                    registrationTemplateFeeItem.Cost = cbFeeItemCost.Value ?? 0.00M;
-                    registrationTemplateFeeItem.MaximumUsageCount = nbMaximumUsageCount.Text.AsIntegerOrNull();
-                    fee.FeeItems.Add( registrationTemplateFeeItem );
+                if (!ValidateFeeItemUIValues())
+                {
+                    return;
                 }
             }
 
@@ -1931,15 +1972,73 @@ The first registrant's information will be used to complete the registrar inform
         }
 
         /// <summary>
+        /// Validates the fee item UI values.
+        /// </summary>
+        /// <returns></returns>
+        private bool ValidateFeeItemUIValues()
+        {
+            var result = true;
+            foreach ( var item in rptFeeItemsMultiple.Items.OfType<RepeaterItem>() )
+            {
+                RegistrationTemplateFeeItem registrationTemplateFeeItem = new RegistrationTemplateFeeItem();
+                var nbFeeItemWarning = item.FindControl( "nbFeeItemWarning" ) as NotificationBox;
+                var tbFeeItemName = item.FindControl( "tbFeeItemName" ) as RockTextBox;
+                var cbFeeItemCost = item.FindControl( "cbFeeItemCost" ) as CurrencyBox;
+                var nbMaximumUsageCount = item.FindControl( "nbMaximumUsageCount" ) as NumberBox;
+                var pnlFeeItemNameContainer = item.FindControl( "pnlFeeItemNameContainer" ) as Panel;
+                if ( tbFeeItemName.Text.IsNullOrWhiteSpace() )
+                {
+                    result = false;
+                    pnlFeeItemNameContainer.AddCssClass( "has-error" );
+                    nbFeeItemWarning.Text = "Option is required.";
+                    nbFeeItemWarning.NotificationBoxType = NotificationBoxType.Danger;
+                    nbFeeItemWarning.Visible = true;
+                }
+                else
+                {
+                    pnlFeeItemNameContainer.RemoveCssClass( "has-error" );
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the fee item UI values.
+        /// </summary>
+        /// <returns></returns>
+        private List<RegistrationTemplateFeeItem> GetFeeItemsFromUI()
+        {
+            var feeItemOrder = 0;
+            var feeItems = new List<RegistrationTemplateFeeItem>();
+            foreach ( var item in rptFeeItemsMultiple.Items.OfType<RepeaterItem>() )
+            {
+                RegistrationTemplateFeeItem registrationTemplateFeeItem = new RegistrationTemplateFeeItem();
+                var hfFeeItemGuid = item.FindControl( "hfFeeItemGuid" ) as HiddenField;
+                var tbFeeItemName = item.FindControl( "tbFeeItemName" ) as RockTextBox;
+                var cbFeeItemCost = item.FindControl( "cbFeeItemCost" ) as CurrencyBox;
+                var nbMaximumUsageCount = item.FindControl( "nbMaximumUsageCount" ) as NumberBox;
+
+                registrationTemplateFeeItem.Guid = hfFeeItemGuid.Value.AsGuid();
+                registrationTemplateFeeItem.Order = feeItemOrder++;
+                registrationTemplateFeeItem.Name = tbFeeItemName.Text;
+                registrationTemplateFeeItem.Cost = cbFeeItemCost.Value ?? 0.00M;
+                registrationTemplateFeeItem.MaximumUsageCount = nbMaximumUsageCount.Text.AsIntegerOrNull();
+                feeItems.Add( registrationTemplateFeeItem );
+            }
+
+            return feeItems;
+        }
+
+        /// <summary>
         /// Handles the SelectedIndexChanged event of the rblFeeType control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rblFeeType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            Guid feeGuid = hfFeeGuid.Value.AsGuid();
-            var fee = FeeState.FirstOrDefault( d => d.Guid.Equals( feeGuid ) );
-            BindFeeItemsControls( fee, rblFeeType.SelectedValueAsEnum<RegistrationFeeType>() );
+            var feeItems = FeeItemsEditState;
+            BindFeeItemsControls( feeItems, rblFeeType.SelectedValueAsEnum<RegistrationFeeType>() );
         }
 
         #endregion
@@ -2866,6 +2965,9 @@ The first registrant's information will be used to complete the registrar inform
                 fee = new RegistrationTemplateFee();
             }
 
+            // make a copy of FeeItems to FeeItemsEditState
+            FeeItemsEditState = fee.FeeItems.ToList();
+
             hfFeeGuid.Value = fee.Guid.ToString();
             tbFeeName.Text = fee.Name;
 
@@ -2875,7 +2977,7 @@ The first registrant's information will be used to complete the registrar inform
                 fee.FeeItems.Add( new RegistrationTemplateFeeItem() );
             }
 
-            BindFeeItemsControls( fee, fee.FeeType );
+            BindFeeItemsControls( FeeItemsEditState, fee.FeeType );
 
             cbAllowMultiple.Checked = fee.AllowMultiple;
             cbDiscountApplies.Checked = fee.DiscountApplies;
@@ -2888,26 +2990,28 @@ The first registrant's information will be used to complete the registrar inform
         /// <summary>
         /// Bind the fee items controls.
         /// </summary>
-        /// <param name="fee">The fee.</param>
-        private void BindFeeItemsControls( RegistrationTemplateFee fee, RegistrationFeeType registrationFeeType )
+        /// <param name="feeItems">The fee items.</param>
+        /// <param name="registrationFeeType">Type of the registration fee.</param>
+        private void BindFeeItemsControls( List<RegistrationTemplateFeeItem> feeItems, RegistrationFeeType registrationFeeType )
         {
             rcwFeeItemsSingle.Visible = ( registrationFeeType == RegistrationFeeType.Single );
             rcwFeeItemsMultiple.Visible = ( registrationFeeType == RegistrationFeeType.Multiple );
 
             if ( registrationFeeType == RegistrationFeeType.Single )
             {
-                var singleFeeItem = fee.FeeItems.FirstOrDefault();
+                var singleFeeItem = feeItems.FirstOrDefault();
                 if ( singleFeeItem == null )
                 {
                     singleFeeItem = new RegistrationTemplateFeeItem();
                 }
 
+                hfFeeItemSingleGuid.Value = singleFeeItem.Guid.ToString();
                 cbFeeItemSingleCost.Text = singleFeeItem.Cost.ToString();
                 nbFeeItemSingleMaximumUsageCount.Text = singleFeeItem.MaximumUsageCount.ToString();
             }
             else
             {
-                rptFeeItemsMultiple.DataSource = fee.FeeItems.ToList();
+                rptFeeItemsMultiple.DataSource = feeItems.ToList();
                 rptFeeItemsMultiple.DataBind();
             }
         }
@@ -2949,16 +3053,19 @@ The first registrant's information will be used to complete the registrar inform
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnDeleteFeeItem_Click(object sender, EventArgs e)
+        protected void btnDeleteFeeItem_Click( object sender, EventArgs e )
         {
-            Guid feeGuid = hfFeeGuid.Value.AsGuid();
-            var fee = FeeState.FirstOrDefault(d => d.Guid.Equals(feeGuid));
+            var feeItems = GetFeeItemsFromUI();
 
-            var hfFeeItemGuid = (sender as Control).NamingContainer.FindControl("hfFeeItemGuid") as HiddenField;
+            var hfFeeItemGuid = ( sender as Control ).NamingContainer.FindControl( "hfFeeItemGuid" ) as HiddenField;
             var feeItemGuid = hfFeeItemGuid.Value.AsGuid();
-            var feeItem = fee.FeeItems.FirstOrDefault(a => a.Guid == feeItemGuid);
-            fee.FeeItems.Remove(feeItem);
-            BindFeeItemsControls(fee, rblFeeType.SelectedValueAsEnum<RegistrationFeeType>());
+            var feeItem = feeItems.FirstOrDefault( a => a.Guid == feeItemGuid );
+            if ( feeItem != null )
+            {
+                feeItems.Remove( feeItem );
+            }
+
+            BindFeeItemsControls( feeItems, rblFeeType.SelectedValueAsEnum<RegistrationFeeType>() );
         }
 
         /// <summary>
@@ -2966,12 +3073,11 @@ The first registrant's information will be used to complete the registrar inform
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnAddFeeItem_Click(object sender, EventArgs e)
+        protected void btnAddFeeItem_Click( object sender, EventArgs e )
         {
-            Guid feeGuid = hfFeeGuid.Value.AsGuid();
-            var fee = FeeState.FirstOrDefault(d => d.Guid.Equals(feeGuid));
-            fee.FeeItems.Add(new RegistrationTemplateFeeItem());
-            BindFeeItemsControls(fee, rblFeeType.SelectedValueAsEnum<RegistrationFeeType>());
+            var feeItems = GetFeeItemsFromUI();
+            feeItems.Add( new RegistrationTemplateFeeItem() );
+            BindFeeItemsControls( feeItems, rblFeeType.SelectedValueAsEnum<RegistrationFeeType>() );
         }
 
         /// <summary>
