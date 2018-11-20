@@ -59,6 +59,15 @@ namespace Rock.Model
         public int RegistrationTemplateFeeId { get; set; }
 
         /// <summary>
+        /// Gets or sets the registration template fee item identifier.
+        /// </summary>
+        /// <value>
+        /// The registration template fee item identifier.
+        /// </value>
+        [DataMember]
+        public int? RegistrationTemplateFeeItemId { get; set; }
+
+        /// <summary>
         /// Gets or sets the quantity.
         /// </summary>
         /// <value>
@@ -106,6 +115,15 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         public virtual RegistrationTemplateFee RegistrationTemplateFee { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration template fee item.
+        /// </summary>
+        /// <value>
+        /// The registration template fee item.
+        /// </value>
+        [LavaInclude]
+        public virtual RegistrationTemplateFeeItem RegistrationTemplateFeeItem { get; set; }
 
         /// <summary>
         /// Gets the total cost.
@@ -170,6 +188,7 @@ namespace Rock.Model
         {
             this.HasRequired( f => f.RegistrationRegistrant ).WithMany( t => t.Fees ).HasForeignKey( f => f.RegistrationRegistrantId ).WillCascadeOnDelete( true );
             this.HasRequired( f => f.RegistrationTemplateFee ).WithMany().HasForeignKey( f => f.RegistrationTemplateFeeId ).WillCascadeOnDelete( false );
+            this.HasOptional( f => f.RegistrationTemplateFeeItem ).WithMany().HasForeignKey( f => f.RegistrationTemplateFeeItemId ).WillCascadeOnDelete( false );
         }
     }
 

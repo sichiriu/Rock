@@ -19,11 +19,13 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
-
+using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 
 using Rock.Data;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Model
 {
@@ -160,6 +162,276 @@ namespace Rock.Model
         public override string ToString()
         {
             return Name;
+        }
+
+        #endregion
+
+
+        #region Helper Methods
+
+        /// <summary>
+        /// Gets the single fee label.
+        /// </summary>
+        /// <returns></returns>
+        private string GetSingleFeeLabel()
+        {
+            var feeItem = this.FeeItems.FirstOrDefault();
+            if ( feeItem != null && feeItem.Cost != 0.0M )
+            {
+                return $"{this.Name} ({feeItem.Cost.FormatAsCurrency()})";
+            }
+            else
+            {
+                return this.Name;
+            }
+        }
+
+        /// <summary>
+        /// Builds the single option single quantity checkbox
+        /// </summary>
+        /// <param name="phFees">The ph fees.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        /// <param name="feeValues">The fee values.</param>
+        private void BuildFeeSingleOptionSingleQuantity( PlaceHolder phFees, bool setValues, List<FeeInfo> feeValues )
+        {
+            var fee = this;
+            var cb = new RockCheckBox();
+            cb.ID = "fee_" + fee.Id.ToString();
+            cb.Label = GetSingleFeeLabel();
+            cb.SelectedIconCssClass = "fa fa-check-square-o fa-lg";
+            cb.UnSelectedIconCssClass = "fa fa-square-o fa-lg";
+            cb.Required = fee.IsRequired;
+
+            phFees.Controls.Add( cb );
+
+            if ( fee.IsRequired )
+            {
+                cb.Checked = true;
+                cb.Enabled = false;
+            }
+            else if ( setValues && feeValues != null && feeValues.Any() )
+            {
+                cb.Checked = feeValues.First().Quantity > 0;
+            }
+        }
+
+        /// <summary>
+        /// Builds the single option multiple quantity.
+        /// </summary>
+        /// <param name="phFees">The ph fees.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        /// <param name="feeValues">The fee values.</param>
+        private void BuildFeeSingleOptionMultipleQuantity( PlaceHolder phFees, bool setValues, List<FeeInfo> feeValues )
+        {
+            var fee = this;
+            var numUpDown = new NumberUpDown();
+            numUpDown.ID = "fee_" + fee.Id.ToString();
+            numUpDown.Label = GetSingleFeeLabel();
+            numUpDown.Minimum = fee.IsRequired == true ? 1 : 0;
+            numUpDown.Required = fee.IsRequired;
+
+            phFees.Controls.Add( numUpDown );
+
+            if ( setValues && feeValues != null && feeValues.Any() )
+            {
+                numUpDown.Value = feeValues.First().Quantity;
+            }
+        }
+
+        /// <summary>
+        /// Builds the multiple option single quantity fee ddl
+        /// </summary>
+        /// <param name="phFees">The ph fees.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        /// <param name="feeValues">The fee values.</param>
+        private void BuildFeeMultipleOptionSingleQuantity( PlaceHolder phFees, bool setValues, List<FeeInfo> feeValues )
+        {
+            var fee = this;
+            var ddl = new RockDropDownList();
+            ddl.ID = "fee_" + fee.Id.ToString();
+            ddl.AddCssClass( "input-width-md" );
+            ddl.Label = fee.Name;
+            ddl.DataValueField = "Key";
+            ddl.DataTextField = "Value";
+            ddl.Required = fee.IsRequired;
+            ddl.ValidationGroup = phFees.RockBlock()?.BlockValidationGroup;
+            ddl.Items.Clear();
+            ddl.Items.Add( new ListItem() );
+            foreach ( var feeItem in fee.FeeItems )
+            {
+                ddl.Items.Add( new ListItem( string.Format( "{0} ({1})", feeItem.Name, feeItem.Cost.FormatAsCurrency() ), feeItem.Id.ToString() ) );
+            }
+
+            phFees.Controls.Add( ddl );
+
+            if ( setValues && feeValues != null && feeValues.Any() )
+            {
+                var defaultFeeItemId = feeValues.Where( f => f.Quantity > 0 ).Select( f => f.RegistrationTemplateFeeItemId ).FirstOrDefault();
+
+                ddl.SetValue( defaultFeeItemId );
+            }
+        }
+
+        /// <summary>
+        /// Builds the multiple option multiple quantity numberupdowngroup control
+        /// </summary>
+        /// <param name="phFees">The ph fees.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        /// <param name="feeValues">The fee values.</param>
+        private void BuildFeeMultipleOptionMultipleQuantity( PlaceHolder phFees, bool setValues, List<FeeInfo> feeValues )
+        {
+            var fee = this;
+            var numberUpDownGroup = new NumberUpDownGroup();
+            numberUpDownGroup.Label = fee.Name;
+            numberUpDownGroup.Required = fee.IsRequired;
+            numberUpDownGroup.ValidationGroup = phFees.RockBlock()?.BlockValidationGroup;
+
+            foreach ( var feeItem in fee.FeeItems )
+            {
+                var numUpDown = new NumberUpDown
+                {
+                    ID = $"feeItem_{feeItem.Guid.ToString( "N" )}",
+                    Label = string.Format( "{0} ({1})", feeItem.Name, feeItem.Cost.FormatAsCurrency() ),
+                    Minimum = 0
+                };
+                numberUpDownGroup.Controls.Add( numUpDown );
+
+                if ( setValues && feeValues != null && feeValues.Any() )
+                {
+                    numUpDown.Value = feeValues
+                        .Where( f => f.RegistrationTemplateFeeItemId == feeItem.Id )
+                        .Select( f => f.Quantity )
+                        .FirstOrDefault();
+                }
+            }
+
+            phFees.Controls.Add( numberUpDownGroup );
+        }
+
+        /// <summary>
+        /// Adds the fee control.
+        /// </summary>
+        /// <param name="phFees">The ph fees.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        /// <param name="feeValues">The fee values.</param>
+        public void AddFeeControl( PlaceHolder phFees, bool setValues, List<FeeInfo> feeValues )
+        {
+            RegistrationTemplateFee fee = this;
+            if ( fee.FeeType == RegistrationFeeType.Single )
+            {
+                var feeItem = fee.FeeItems.FirstOrDefault();
+                if ( feeItem != null )
+                {
+                    string label = fee.Name;
+
+                    if ( feeItem.Cost != 0.0M )
+                    {
+                        label = string.Format( "{0} ({1})", fee.Name, feeItem.Cost.FormatAsCurrency() );
+                    }
+
+                    if ( fee.AllowMultiple )
+                    {
+                        BuildFeeSingleOptionMultipleQuantity( phFees, setValues, feeValues );
+                    }
+                    else
+                    {
+                        BuildFeeSingleOptionSingleQuantity( phFees, setValues, feeValues );
+                    }
+                }
+            }
+            else
+            {
+                if ( fee.AllowMultiple )
+                {
+                    BuildFeeMultipleOptionMultipleQuantity( phFees, setValues, feeValues );
+                }
+                else
+                {
+                    BuildFeeMultipleOptionSingleQuantity( phFees, setValues, feeValues );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the fee information from controls.
+        /// </summary>
+        /// <param name="phFees">The ph fees.</param>
+        /// <returns></returns>
+        public List<FeeInfo> GetFeeInfoFromControls( PlaceHolder phFees )
+        {
+            RegistrationTemplateFee fee = this;
+
+            string fieldId = string.Format( "fee_{0}", fee.Id );
+            
+            if ( fee.FeeType == RegistrationFeeType.Single )
+            {
+                var singleFeeItem = fee.FeeItems.FirstOrDefault();
+                if ( fee.AllowMultiple )
+                {
+                    // Single Option, Multi Quantity
+                    var numUpDown = phFees.FindControl( fieldId ) as NumberUpDown;
+                    if ( numUpDown != null && numUpDown.Value > 0 )
+                    {
+                        return new List<FeeInfo> { new FeeInfo( singleFeeItem, numUpDown.Value, singleFeeItem.Cost ) };
+                    }
+                }
+                else
+                {
+                    // Single Option, Single Quantity
+                    var cb = phFees.FindControl( fieldId ) as RockCheckBox;
+                    if ( cb != null && cb.Checked )
+                    {
+                        return new List<FeeInfo> { new FeeInfo( singleFeeItem, 1, singleFeeItem.Cost ) };
+                    }
+                }
+            }
+            else
+            {
+                if ( fee.AllowMultiple )
+                {
+                    // Multi Option, Multi Quantity
+                    var result = new List<FeeInfo>();
+
+                    foreach ( var feeItem in fee.FeeItems )
+                    {
+                        string optionFieldId = $"feeItem_{feeItem.Guid.ToString( "N" )}";
+                        var numUpDownGroups = phFees.ControlsOfTypeRecursive<NumberUpDownGroup>();
+
+                        foreach ( NumberUpDownGroup numberUpDownGroup in numUpDownGroups )
+                        {
+                            foreach ( NumberUpDown numberUpDown in numberUpDownGroup.ControlGroup )
+                            {
+                                if ( numberUpDown.ID == optionFieldId && numberUpDown.Value > 0 )
+                                {
+                                    result.Add( new FeeInfo(feeItem, numberUpDown.Value, feeItem.Cost ) );
+                                }
+                            }
+                        }
+                    }
+
+                    if ( result.Any() )
+                    {
+                        return result;
+                    }
+                }
+                else
+                {
+                    // Multi Option, Single Quantity
+                    var ddl = phFees.FindControl( fieldId ) as RockDropDownList;
+                    if ( ddl != null && ddl.SelectedValue != string.Empty )
+                    {
+
+                        var feeItemId = ddl.SelectedValue.AsInteger();
+                        var feeItem = fee.FeeItems.FirstOrDefault( a => a.Id == feeItemId );
+                        if ( feeItem != null )
+                        {
+                            return new List<FeeInfo> { new FeeInfo( feeItem, 1, feeItem.Cost ) };
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
 
         #endregion
