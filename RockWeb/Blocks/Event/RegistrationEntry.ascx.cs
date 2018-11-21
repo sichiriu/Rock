@@ -4867,6 +4867,12 @@ namespace RockWeb.Blocks.Event
                     minimumInitialPayment = RegistrationInstanceState.MinimumInitialPayment;
                 }
 
+                decimal? defaultPaymentAmount = RegistrationTemplate.DefaultPayment;
+                if ( RegistrationTemplate.SetCostOnInstance ?? false )
+                {
+                    defaultPaymentAmount = RegistrationInstanceState.DefaultPayment;
+                }
+
                 // Get the cost/fee summary
                 var costs = new List<RegistrationCostSummaryInfo>();
                 foreach ( var registrant in RegistrationState.Registrants )
@@ -5014,7 +5020,16 @@ namespace RockWeb.Blocks.Event
                         RegistrationState.PaymentAmount.Value < minimumPayment.Value ||
                         RegistrationState.PaymentAmount.Value > balanceDue )
                     {
-                        RegistrationState.PaymentAmount = balanceDue;
+                        // TODO DefaultPaymentAmount
+                        if ( defaultPaymentAmount.HasValue && ( defaultPaymentAmount >= minimumPayment && defaultPaymentAmount <= balanceDue ) )
+                        {
+                            // if there is defaultPayment set, make that amount as long it is more than the minimumPayment and not more than the balanceDue
+                            RegistrationState.PaymentAmount = defaultPaymentAmount;
+                        }
+                        else
+                        {
+                            RegistrationState.PaymentAmount = balanceDue;
+                        }
                     }
 
                     nbAmountPaid.Visible = allowPartialPayment;

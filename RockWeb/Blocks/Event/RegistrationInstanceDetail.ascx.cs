@@ -2698,6 +2698,8 @@ namespace RockWeb.Blocks.Event
                 lCost.Text = registrationInstance.Cost.FormatAsCurrency();
                 lMinimumInitialPayment.Visible = registrationInstance.MinimumInitialPayment.HasValue;
                 lMinimumInitialPayment.Text = registrationInstance.MinimumInitialPayment.HasValue ? registrationInstance.MinimumInitialPayment.Value.FormatAsCurrency() : string.Empty;
+                lDefaultPaymentAmount.Visible = registrationInstance.DefaultPayment.HasValue;
+                lDefaultPaymentAmount.Text = registrationInstance.DefaultPayment.HasValue ? registrationInstance.DefaultPayment.Value.FormatAsCurrency() : string.Empty;
             }
             else
             {

@@ -97,6 +97,7 @@
                             <div class="col-md-6">
                                 <Rock:RockLiteral ID="lCost" runat="server" Label="Cost" />
                                 <Rock:RockLiteral ID="lMinimumInitialPayment" runat="server" Label="Minimum Initial Payment" />
+                                <Rock:RockLiteral ID="lDefaultPaymentAmount" runat="server" Label="Default Payment Amount" />
                                 <Rock:RockLiteral ID="lAccount" runat="server" Label="Account" />
                             </div>
                         </div>

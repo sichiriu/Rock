@@ -143,6 +143,8 @@
                                         Help="The cost per registrant." />
                                     <Rock:CurrencyBox ID="cbMinimumInitialPayment" runat="server" Label="Minimum Initial Payment"
                                         Help="The minimum amount required per registrant. Leave value blank if full amount is required." />
+                                    <Rock:CurrencyBox ID="cbDefaultPaymentAmount" runat="server" Label="Default Payment Amount"
+                                        Help="The default payment amount per registrant. Leave value blank to default to the full amount." />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:FinancialGatewayPicker ID="fgpFinancialGateway" runat="server" Label="Financial Gateway"
@@ -348,6 +350,7 @@
                         <div class="col-md-6">
                             <Rock:RockLiteral ID="lCost" runat="server" Label="Cost" />
                             <Rock:RockLiteral ID="lMinimumInitialPayment" runat="server" Label="Minimum Initial Payment" />
+                            <Rock:RockLiteral ID="lDefaultPaymentAmount" runat="server" Label="Default Payment Amount" />
                             <Rock:RockControlWrapper ID="rcwFees" runat="server" Label="Fees">
                                 <asp:Repeater ID="rFees" runat="server">
                                     <ItemTemplate>

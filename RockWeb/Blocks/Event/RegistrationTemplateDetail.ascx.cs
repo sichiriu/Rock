@@ -836,6 +836,7 @@ The first registrant's information will be used to complete the registrar inform
             registrationTemplate.SetCostOnInstance = !tglSetCostOnTemplate.Checked;
             registrationTemplate.Cost = cbCost.Text.AsDecimal();
             registrationTemplate.MinimumInitialPayment = cbMinimumInitialPayment.Text.AsDecimalOrNull();
+            registrationTemplate.DefaultPayment = cbDefaultPaymentAmount.Text.AsDecimalOrNull();
             registrationTemplate.FinancialGatewayId = fgpFinancialGateway.SelectedValueAsInt();
             registrationTemplate.BatchNamePrefix = txtBatchNamePrefix.Text;
 
@@ -2227,6 +2228,7 @@ The first registrant's information will be used to complete the registrar inform
             tglSetCostOnTemplate.Checked = !registrationTemplate.SetCostOnInstance.HasValue || !registrationTemplate.SetCostOnInstance.Value;
             cbCost.Text = registrationTemplate.Cost.ToString();
             cbMinimumInitialPayment.Text = registrationTemplate.MinimumInitialPayment.HasValue ? registrationTemplate.MinimumInitialPayment.Value.ToString( "N2" ) : string.Empty;
+            cbDefaultPaymentAmount.Text = registrationTemplate.DefaultPayment.HasValue ? registrationTemplate.DefaultPayment.Value.ToString( "N2" ) : string.Empty;
             fgpFinancialGateway.SetValue( registrationTemplate.FinancialGatewayId );
             txtBatchNamePrefix.Text = registrationTemplate.BatchNamePrefix;
             SetCostVisibility();
@@ -2272,6 +2274,7 @@ The first registrant's information will be used to complete the registrar inform
             bool setCostOnTemplate = tglSetCostOnTemplate.Checked;
             cbCost.Visible = setCostOnTemplate;
             cbMinimumInitialPayment.Visible = setCostOnTemplate;
+            cbDefaultPaymentAmount.Visible = setCostOnTemplate;
         }
 
         /// <summary>
@@ -2337,6 +2340,7 @@ The first registrant's information will be used to complete the registrar inform
             {
                 lCost.Text = "Set on Instance";
                 lMinimumInitialPayment.Text = "Set on Instance";
+                lDefaultPaymentAmount.Text = "Set on Instance";
             }
             else
             {
@@ -2344,6 +2348,9 @@ The first registrant's information will be used to complete the registrar inform
                 lMinimumInitialPayment.Visible = registrationTemplate.MinimumInitialPayment.HasValue;
                 lMinimumInitialPayment.Text = registrationTemplate.MinimumInitialPayment.HasValue ?
                     registrationTemplate.MinimumInitialPayment.Value.FormatAsCurrency() : string.Empty;
+                lDefaultPaymentAmount.Visible = registrationTemplate.DefaultPayment.HasValue;
+                lDefaultPaymentAmount.Text = registrationTemplate.DefaultPayment.HasValue ?
+                    registrationTemplate.DefaultPayment.Value.FormatAsCurrency() : string.Empty;
             }
 
             rFees.DataSource = registrationTemplate.Fees.OrderBy( f => f.Order ).ToList();
