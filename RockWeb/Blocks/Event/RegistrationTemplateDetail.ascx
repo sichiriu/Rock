@@ -89,6 +89,7 @@
                                             <asp:ListItem Value="0" Text="Prompt For Registrar" />
                                             <asp:ListItem Value="1" Text="Pre-fill First Registrant" />
                                             <asp:ListItem Value="2" Text="Use First Registrant" />
+                                            <asp:ListItem Value="3" Text="Use Logged In Person" />
                                         </Rock:RockDropDownList>
                                     </div>
                                 </div>

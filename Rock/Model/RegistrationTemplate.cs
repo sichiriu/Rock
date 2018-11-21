@@ -795,7 +795,13 @@ namespace Rock.Model
         /// <summary>
         /// Use first registrant
         /// </summary>
-        UseFirstRegistrant = 2
+        UseFirstRegistrant = 2,
+
+        /// <summary>
+        /// Use the LoggedIn person and keep fields readonly, except for fields that haven't been collected yet
+        /// For example, if EmailAddress wasn't known, Email would be prompted vs readonly.
+        /// </summary>
+        UseLoggedInPerson = 3
     }
 
     #endregion

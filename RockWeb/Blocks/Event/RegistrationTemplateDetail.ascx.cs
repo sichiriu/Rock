@@ -480,6 +480,9 @@ The first registrant's information will be used to complete the registrar inform
 
 <strong>Use First Registrant</strong>
 The first registrant's information will be used to complete the registrar information form and the form will not be displayed.  (If the first registrant's name and email is not provided the registrar information form will still display.)
+
+<strong>Use Logged In Person</strong>
+The logged-in person's information will be used to complete the registrar information form and the form will not be displayed.  (If the logged in person's email is not known, a prompt for email will be shown.)
 ";
 
             string deleteScript = @"

@@ -3664,7 +3664,7 @@ namespace RockWeb.Blocks.Event
                 AutoApplyDiscounts();
             }
 
-            pnlRegistrarInfo.Visible = CurrentPanel == 2;
+            pnlRegistrarInfoPrompt.Visible = CurrentPanel == 2;
 
             CreateDynamicControls( true );
 
@@ -4788,7 +4788,7 @@ namespace RockWeb.Blocks.Event
                          !string.IsNullOrWhiteSpace( tbConfirmationEmail.Text ) &&
                          RegistrationTemplate.RegistrarOption == RegistrarOption.UseFirstRegistrant )
                     {
-                        pnlRegistrarInfo.Visible = false;
+                        pnlRegistrarInfoPrompt.Visible = false;
                     }
 
                     // set the registrar to be in the same family as the first registrant
@@ -4798,29 +4798,41 @@ namespace RockWeb.Blocks.Event
                     }
                 }
                 // Check to see if this is an existing registration or information has already been entered
-                else if ( RegistrationState.RegistrationId.HasValue ||
-                    !string.IsNullOrWhiteSpace( RegistrationState.FirstName ) ||
-                    !string.IsNullOrWhiteSpace( RegistrationState.LastName ) ||
-                    !string.IsNullOrWhiteSpace( RegistrationState.ConfirmationEmail ) )
-                {
-                    // If so, use it
-                    tbYourFirstName.Text = RegistrationState.FirstName;
-                    tbYourLastName.Text = RegistrationState.LastName;
-                    tbConfirmationEmail.Text = RegistrationState.ConfirmationEmail;
-                }
                 else
                 {
-                    if ( CurrentPerson != null )
+                    if ( RegistrationTemplate.RegistrarOption == RegistrarOption.UseLoggedInPerson && CurrentPerson != null )
                     {
-                        tbYourFirstName.Text = CurrentPerson.NickName;
-                        tbYourLastName.Text = CurrentPerson.LastName;
-                        tbConfirmationEmail.Text = CurrentPerson.Email;
+                        // If UseLoggedInPerson is enabled, only prompt for Email, and only if it is isn't known
+                        pnlRegistrarInfoPrompt.Visible = false;
+                        pnlRegistrarInfoUseLoggedInPerson.Visible = CurrentPerson.Email.IsNullOrWhiteSpace();
                     }
                     else
                     {
-                        tbYourFirstName.Text = string.Empty;
-                        tbYourLastName.Text = string.Empty;
-                        tbConfirmationEmail.Text = string.Empty;
+                        if ( RegistrationState.RegistrationId.HasValue ||
+                          !string.IsNullOrWhiteSpace( RegistrationState.FirstName ) ||
+                          !string.IsNullOrWhiteSpace( RegistrationState.LastName ) ||
+                          !string.IsNullOrWhiteSpace( RegistrationState.ConfirmationEmail ) )
+                        {
+                            // If so, use it
+                            tbYourFirstName.Text = RegistrationState.FirstName;
+                            tbYourLastName.Text = RegistrationState.LastName;
+                            tbConfirmationEmail.Text = RegistrationState.ConfirmationEmail;
+                        }
+                        else
+                        {
+                            if ( CurrentPerson != null )
+                            {
+                                tbYourFirstName.Text = CurrentPerson.NickName;
+                                tbYourLastName.Text = CurrentPerson.LastName;
+                                tbConfirmationEmail.Text = CurrentPerson.Email;
+                            }
+                            else
+                            {
+                                tbYourFirstName.Text = string.Empty;
+                                tbYourLastName.Text = string.Empty;
+                                tbConfirmationEmail.Text = string.Empty;
+                            }
+                        }
                     }
                 }
 
@@ -5020,7 +5032,6 @@ namespace RockWeb.Blocks.Event
                         RegistrationState.PaymentAmount.Value < minimumPayment.Value ||
                         RegistrationState.PaymentAmount.Value > balanceDue )
                     {
-                        // TODO DefaultPaymentAmount
                         if ( defaultPaymentAmount.HasValue && ( defaultPaymentAmount >= minimumPayment && defaultPaymentAmount <= balanceDue ) )
                         {
                             // if there is defaultPayment set, make that amount as long it is more than the minimumPayment and not more than the balanceDue
@@ -5199,9 +5210,22 @@ namespace RockWeb.Blocks.Event
         {
             if ( RegistrationState != null )
             {
-                RegistrationState.FirstName = tbYourFirstName.Text;
-                RegistrationState.LastName = tbYourLastName.Text;
-                RegistrationState.ConfirmationEmail = tbConfirmationEmail.Text;
+                if ( RegistrationTemplate.RegistrarOption == RegistrarOption.UseLoggedInPerson && CurrentPerson != null )
+                {
+                    RegistrationState.FirstName = CurrentPerson.NickName;
+                    RegistrationState.LastName = CurrentPerson.LastName;
+                    RegistrationState.ConfirmationEmail = CurrentPerson.Email;
+                    if ( pnlRegistrarInfoUseLoggedInPerson.Visible )
+                    {
+                        RegistrationState.ConfirmationEmail = cbUseLoggedInPersonEmail.Text;
+                    }
+                }
+                else
+                {
+                    RegistrationState.FirstName = tbYourFirstName.Text;
+                    RegistrationState.LastName = tbYourLastName.Text;
+                    RegistrationState.ConfirmationEmail = tbConfirmationEmail.Text;
+                }
 
                 if ( rblRegistrarFamilyOptions.Visible )
                 {
