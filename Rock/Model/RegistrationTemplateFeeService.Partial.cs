@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rock.Data;
 
 namespace Rock.Model
 {
@@ -64,10 +65,10 @@ namespace Rock.Model
 
             var options = new List<Tuple<string, decimal>>();
             string[] nameValues = registrationTemplateFee.CostValue.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-            foreach (string nameValue in nameValues )
+            foreach ( string nameValue in nameValues )
             {
                 string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
-                if ( nameAndValue.Length == 1)
+                if ( nameAndValue.Length == 1 )
                 {
                     options.Add( Tuple.Create<string, decimal>( nameAndValue[0], 0.00m ) );
                 }
@@ -126,7 +127,7 @@ namespace Rock.Model
                 {
                     var registrationTemplateFeeItem = new Rock.Model.RegistrationTemplateFeeItem();
                     registrationTemplateFeeItem.RegistrationTemplateFeeId = registrationTemplateFee.Id;
-                    registrationTemplateFeeItem.Name = "Fee";
+                    registrationTemplateFeeItem.Name = registrationTemplateFee.Name;
                     registrationTemplateFeeItem.Cost = registrationTemplateFee.CostValue.AsDecimalOrNull() ?? 0;
                     registrationTemplateFeeItemService.Add( registrationTemplateFeeItem );
 
@@ -160,7 +161,7 @@ namespace Rock.Model
 
                         if ( string.IsNullOrWhiteSpace( registrationTemplateFeeItem.Name ) )
                         {
-                            registrationTemplateFeeItem.Name = "Fee";
+                            registrationTemplateFeeItem.Name = registrationTemplateFee.Name;
                         }
 
                         registrationTemplateFeeItemService.Add( registrationTemplateFeeItem );
@@ -179,29 +180,23 @@ namespace Rock.Model
         /// <returns></returns>
         public IEnumerable<TemplateFeeReport> GetRegistrationTemplateFeeReport( int registrationInstanceId )
         {
-            string query = @"
-			SELECT r.Id AS RegistrationId
-				, r.CreatedDateTime AS RegistrationDate
-				, r.FirstName + ' ' + r.LastName AS RegisteredByName
-				, p.FirstName + ' ' + p.LastName AS RegistrantName
-				, rr.Id AS RegistrantId
-				, tf.[Name] AS FeeName
-				, f.[Option] AS [Option]
-				, f.Quantity AS Quantity
-				, f.Cost AS Cost
-				, f.Quantity* f.Cost AS FeeTotal
-			FROM RegistrationInstance i
-			JOIN Registration r ON i.id = r.RegistrationInstanceId
-			join RegistrationRegistrant rr on r.id = rr.RegistrationId
-			join RegistrationRegistrantFee f on rr.id = f.RegistrationRegistrantId
-			join RegistrationTemplateFee tf on tf.Id = f.RegistrationTemplateFeeId
-			join PersonAlias pa on rr.PersonAliasId = pa.Id
-			join Person p on pa.PersonId = p.Id
-			WHERE i.Id = @RegistrationInstanceId";
+            var qry = new RegistrationRegistrantFeeService( this.Context as RockContext ).Queryable();
+            qry = qry.Where( a => a.RegistrationRegistrant.Registration.RegistrationInstanceId == registrationInstanceId );
 
-            var param = new System.Data.SqlClient.SqlParameter( "@RegistrationInstanceId", registrationInstanceId );
+            var result = qry.Select( a => new TemplateFeeReport
+            {
+                RegistrationId = a.RegistrationRegistrant.RegistrationId,
+                RegistrationDate = a.RegistrationRegistrant.Registration.CreatedDateTime,
+                RegisteredByName = a.RegistrationRegistrant.Registration.FirstName + " " + a.RegistrationRegistrant.Registration.LastName,
+                RegistrantPerson = a.RegistrationRegistrant.PersonAlias.Person,
+                RegistrantId = a.RegistrationRegistrantId,
+                FeeName = a.RegistrationTemplateFee.Name,
+                Option = a.Option,
+                Quantity = a.Quantity,
+                Cost = a.Cost
+            } ).ToList();
 
-            return Context.Database.SqlQuery<TemplateFeeReport>( query, param );
+            return result;
         }
     }
 
@@ -221,7 +216,7 @@ namespace Rock.Model
         /// <summary>
         /// The registration date
         /// </summary>
-        private DateTime _registrationDate;
+        private DateTime? _registrationDate;
 
         /// <summary>
         /// Gets or sets the registration date.
@@ -229,11 +224,11 @@ namespace Rock.Model
         /// <value>
         /// The registration date.
         /// </value>
-        public DateTime RegistrationDate
+        public DateTime? RegistrationDate
         {
             get
             {
-                return _registrationDate.Date;
+                return _registrationDate?.Date;
             }
 
             set
@@ -251,12 +246,20 @@ namespace Rock.Model
         public string RegisteredByName { get; set; }
 
         /// <summary>
+        /// Gets or sets the registrant person.
+        /// </summary>
+        /// <value>
+        /// The registrant person.
+        /// </value>
+        public Person RegistrantPerson { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the registrant.
         /// </summary>
         /// <value>
         /// The name of the registrant.
         /// </value>
-        public string RegistrantName { get; set; }
+        public string RegistrantName => RegistrantPerson.FullName;
 
         /// <summary>
         /// Gets or sets the registrant identifier.
@@ -304,6 +307,6 @@ namespace Rock.Model
         /// <value>
         /// The fee total.
         /// </value>
-        public decimal FeeTotal { get; set; }
+        public decimal FeeTotal => Quantity * Cost;
     }
 }

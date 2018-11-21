@@ -1859,7 +1859,7 @@ The first registrant's information will be used to complete the registrar inform
             {
                 RegistrationTemplateFeeItem registrationTemplateFeeItem = new RegistrationTemplateFeeItem();
                 registrationTemplateFeeItem.Guid = hfFeeItemSingleGuid.Value.AsGuid();
-                registrationTemplateFeeItem.Name = "Fee";
+                registrationTemplateFeeItem.Name = fee.Name;
                 registrationTemplateFeeItem.Cost = cbFeeItemSingleCost.Value ?? 0.00M;
                 registrationTemplateFeeItem.MaximumUsageCount = nbFeeItemSingleMaximumUsageCount.Text.AsIntegerOrNull();
                 fee.FeeItems.Add( registrationTemplateFeeItem );

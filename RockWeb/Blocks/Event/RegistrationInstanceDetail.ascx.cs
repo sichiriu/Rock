@@ -4590,15 +4590,14 @@ namespace RockWeb.Blocks.Event
         {
             cblFeeOptions.Items.Clear();
 
-            string feeId = ddlFeeName.SelectedValue;
-            if ( feeId.IsNotNullOrWhiteSpace() )
+            int? feeId = ddlFeeName.SelectedValue.AsIntegerOrNull();
+            if ( feeId.HasValue )
             {
-                var registrationTemplateFeeService = new RegistrationTemplateFeeService( new RockContext() );
-                var fees = registrationTemplateFeeService.GetParsedFeeOptionsWithoutCost( feeId.AsInteger() );
+                var feeItems = new RegistrationTemplateFeeItemService( new RockContext() ).Queryable().Where( a => a.RegistrationTemplateFeeId == feeId );
 
-                foreach ( var fee in fees )
+                foreach ( var feeItem in feeItems )
                 {
-                    cblFeeOptions.Items.Add( new ListItem( fee, fee ) );
+                    cblFeeOptions.Items.Add( new ListItem( feeItem.Name, feeItem.Guid.ToJson() ) );
                 }
 
                 string feeOptionValues = fFees.GetUserPreference( "FeeOptions" );

@@ -50,7 +50,7 @@ namespace Rock.Model
         public int RegistrationRegistrantId { get; set; }
 
         /// <summary>
-        /// Gets or sets the registration template fee identifier.
+        /// Gets or sets the registration template fee identifier. See also <seealso cref="RegistrationTemplateFeeItemId"/>.
         /// </summary>
         /// <value>
         /// The registration template fee identifier.
@@ -77,7 +77,7 @@ namespace Rock.Model
         public int Quantity { get; set; }
 
         /// <summary>
-        /// Gets or sets the option.
+        /// Gets or sets the name of the FeeItem that was selected. See also <seealso cref="RegistrationTemplateFeeItem"/>.
         /// </summary>
         /// <value>
         /// The option.
@@ -108,7 +108,7 @@ namespace Rock.Model
         public virtual RegistrationRegistrant RegistrationRegistrant { get; set; }
 
         /// <summary>
-        /// Gets or sets the registration template fee.
+        /// Gets or sets the registration template fee. See also <seealso cref="RegistrationTemplateFeeItem"/>.
         /// </summary>
         /// <value>
         /// The registration template fee.

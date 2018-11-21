@@ -787,6 +787,7 @@ namespace RockWeb.Blocks.Event
         private void BuildFees( bool setValues )
         {
             phFees.Controls.Clear();
+            var registrationInstance = new RegistrationInstanceService( new RockContext() ).GetNoTracking( RegistrationInstanceId );
 
             if ( TemplateState.Fees != null && TemplateState.Fees.Any() )
             {
@@ -795,7 +796,7 @@ namespace RockWeb.Blocks.Event
                 foreach ( var fee in TemplateState.Fees.OrderBy( f => f.Order ) )
                 {
                     var feeValues = GetFeeValues( fee );
-                    fee.AddFeeControl( phFees, true, feeValues );
+                    fee.AddFeeControl( phFees, registrationInstance, true, feeValues );
                 }
             }
             else

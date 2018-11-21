@@ -4124,7 +4124,7 @@ namespace RockWeb.Blocks.Event
                             feeValues = registrant.FeeValues[fee.Id];
                         }
 
-                        fee.AddFeeControl( phFees, setValues, feeValues );
+                        fee.AddFeeControl( phFees, this.RegistrationInstanceState, setValues, feeValues );
                     }
                 }
             }

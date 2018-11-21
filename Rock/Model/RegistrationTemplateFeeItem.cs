@@ -14,9 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
@@ -118,6 +120,27 @@ namespace Rock.Model
         public override string ToString()
         {
             return Name;
+        }
+
+        /// <summary>
+        /// If this fee has a <see cref="MaximumUsageCount"/>, returns the number of allowed usages remaining for the specified <see cref="RegistrationInstance"/>
+        /// </summary>
+        /// <param name="registrationInstance">The registration instance.</param>
+        /// <returns></returns>
+        public int? GetUsageCountRemaining( RegistrationInstance registrationInstance )
+        {
+            if ( !this.MaximumUsageCount.HasValue || registrationInstance == null )
+            {
+                return null;
+            }
+
+            int? usageCountRemaining;
+            var registrationInstanceId = registrationInstance.Id;
+            var registrationInstanceFeesQuery = new RegistrationRegistrantFeeService( new RockContext() ).Queryable().Where( a => a.RegistrationRegistrant.Registration.RegistrationInstanceId == registrationInstanceId );
+
+            var feeUsedCount = registrationInstanceFeesQuery.Where( a => a.RegistrationTemplateFeeItemId == this.Id ).Sum( a => ( int? ) a.Quantity ) ?? 0;
+            usageCountRemaining = this.MaximumUsageCount.Value - feeUsedCount;
+            return usageCountRemaining;
         }
 
         #endregion
