@@ -1515,6 +1515,7 @@ Registration By: {0} Total Cost/Fees:{1}
         /// <value>
         /// The option.
         /// </value>
+        [RockObsolete( "1.9" )]
         [Obsolete( "Use RegistrationTemplateFeeItemId + FeeLabel instead" )]
         public string Option
         {
@@ -1611,7 +1612,8 @@ Registration By: {0} Total Cost/Fees:{1}
         /// <param name="option">The option.</param>
         /// <param name="quantity">The quantity.</param>
         /// <param name="cost">The cost.</param>
-        [Obsolete]
+        [RockObsolete( "1.9" )]
+        [Obsolete( "Use other FeeInfo constructor" )]
         public FeeInfo( string option, int quantity, decimal cost )
             : this()
         {

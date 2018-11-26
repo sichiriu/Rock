@@ -46,9 +46,6 @@ namespace Rock.Client
         public bool DiscountApplies { get; set; }
 
         /// <summary />
-        public ICollection<RegistrationTemplateFeeItem> FeeItems { get; set; }
-
-        /// <summary />
         public Rock.Client.Enums.RegistrationFeeType FeeType { get; set; }
 
         /// <summary />
@@ -115,7 +112,6 @@ namespace Rock.Client
             this.CostValue = source.CostValue;
             #pragma warning restore 612, 618
             this.DiscountApplies = source.DiscountApplies;
-            this.FeeItems = source.FeeItems;
             this.FeeType = source.FeeType;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
@@ -140,6 +136,9 @@ namespace Rock.Client
     /// </summary>
     public partial class RegistrationTemplateFee : RegistrationTemplateFeeEntity
     {
+        /// <summary />
+        public ICollection<RegistrationTemplateFeeItem> FeeItems { get; set; }
+
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>

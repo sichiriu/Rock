@@ -99,7 +99,6 @@ namespace Rock.Model
             target.CostValue = source.CostValue;
             #pragma warning restore 612, 618
             target.DiscountApplies = source.DiscountApplies;
-            target.FeeItems = source.FeeItems;
             target.FeeType = source.FeeType;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
