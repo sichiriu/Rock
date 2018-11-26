@@ -1657,6 +1657,14 @@ Registration By: {0} Total Cost/Fees:{1}
         /// The minimum payment.
         /// </value>
         public decimal MinPayment { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default payment.
+        /// </summary>
+        /// <value>
+        /// The default payment.
+        /// </value>
+        public decimal? DefaultPayment { get; set; }
     }
 
     /// <summary>

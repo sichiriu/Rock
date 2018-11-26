@@ -145,7 +145,7 @@
                                     <Rock:CurrencyBox ID="cbMinimumInitialPayment" runat="server" Label="Minimum Initial Payment"
                                         Help="The minimum amount required per registrant. Leave value blank if full amount is required." />
                                     <Rock:CurrencyBox ID="cbDefaultPaymentAmount" runat="server" Label="Default Payment Amount"
-                                        Help="The default payment amount per registrant. Leave value blank to default to the full amount." />
+                                        Help="The default payment amount per registrant. Leave value blank to default to the full amount. NOTE: This requires that a Minimum Initial Payment is defined." />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:FinancialGatewayPicker ID="fgpFinancialGateway" runat="server" Label="Financial Gateway"

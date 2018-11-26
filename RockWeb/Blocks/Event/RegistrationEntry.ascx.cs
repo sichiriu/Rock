@@ -84,6 +84,7 @@ namespace RockWeb.Blocks.Event
         private const string CURRENT_REGISTRANT_INDEX_KEY = "CurrentRegistrantIndex";
         private const string CURRENT_FORM_INDEX_KEY = "CurrentFormIndex";
         private const string MINIMUM_PAYMENT_KEY = "MinimumPayment";
+        private const string DEFAULT_PAYMENT_KEY = "DefaultPayment";
 
         // protected variables
         private decimal _percentComplete = 0;
@@ -200,12 +201,20 @@ namespace RockWeb.Blocks.Event
         protected string Step2IFrameUrl { get; set; }
 
         /// <summary>
-        /// Gets or sets the minimum payment.
+        /// Gets or sets the minimum payment total after factoring in discounts, fees, and minimum payment amount per registrant
         /// </summary>
         /// <value>
         /// The minimum payment.
         /// </value>
         private decimal? minimumPayment { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default payment (combined for all registrants for this registration) 
+        /// </summary>
+        /// <value>
+        /// The default payment.
+        /// </value>
+        private decimal? defaultPayment { get; set; }
 
         /// <summary>
         /// Gets the registration template.
@@ -441,6 +450,7 @@ namespace RockWeb.Blocks.Event
             CurrentRegistrantIndex = ViewState[CURRENT_REGISTRANT_INDEX_KEY] as int? ?? 0;
             CurrentFormIndex = ViewState[CURRENT_FORM_INDEX_KEY] as int? ?? 0;
             minimumPayment = ViewState[MINIMUM_PAYMENT_KEY] as decimal?;
+            defaultPayment = ViewState[DEFAULT_PAYMENT_KEY] as decimal?;
 
             CreateDynamicControls( false );
         }
@@ -612,6 +622,7 @@ namespace RockWeb.Blocks.Event
             ViewState[CURRENT_REGISTRANT_INDEX_KEY] = CurrentRegistrantIndex;
             ViewState[CURRENT_FORM_INDEX_KEY] = CurrentFormIndex;
             ViewState[MINIMUM_PAYMENT_KEY] = minimumPayment;
+            ViewState[DEFAULT_PAYMENT_KEY] = defaultPayment;
 
             return base.SaveViewState();
         }
@@ -4873,16 +4884,16 @@ namespace RockWeb.Blocks.Event
                     tbDiscountCode.Text = RegistrationState.DiscountCode;
                 }
 
-                decimal? minimumInitialPayment = RegistrationTemplate.MinimumInitialPayment;
+                decimal? minimumInitialPaymentPerRegistrant = RegistrationTemplate.MinimumInitialPayment;
                 if ( RegistrationTemplate.SetCostOnInstance ?? false )
                 {
-                    minimumInitialPayment = RegistrationInstanceState.MinimumInitialPayment;
+                    minimumInitialPaymentPerRegistrant = RegistrationInstanceState.MinimumInitialPayment;
                 }
 
-                decimal? defaultPaymentAmount = RegistrationTemplate.DefaultPayment;
+                decimal? defaultPaymentAmountPerRegistrant = RegistrationTemplate.DefaultPayment;
                 if ( RegistrationTemplate.SetCostOnInstance ?? false )
                 {
-                    defaultPaymentAmount = RegistrationInstanceState.DefaultPayment;
+                    defaultPaymentAmountPerRegistrant = RegistrationInstanceState.DefaultPayment;
                 }
 
                 // Get the cost/fee summary
@@ -4904,6 +4915,7 @@ namespace RockWeb.Blocks.Event
                             costSummary.Cost = 0.0M;
                             costSummary.DiscountedCost = 0.0M;
                             costSummary.MinPayment = 0.0M;
+                            costSummary.DefaultPayment = 0.0M;
                         }
                         else
                         {
@@ -4918,7 +4930,8 @@ namespace RockWeb.Blocks.Event
                             }
 
                             // If registration allows a minimum payment calculate that amount, otherwise use the discounted amount as minimum
-                            costSummary.MinPayment = minimumInitialPayment.HasValue ? minimumInitialPayment.Value : costSummary.DiscountedCost;
+                            costSummary.MinPayment = minimumInitialPaymentPerRegistrant.HasValue ? minimumInitialPaymentPerRegistrant.Value : costSummary.DiscountedCost;
+                            costSummary.DefaultPayment = defaultPaymentAmountPerRegistrant;
                         }
 
                         costs.Add( costSummary );
@@ -4954,7 +4967,7 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 // If template allows a minimum payment, then fees are not included, otherwise it is included
-                                costSummary.MinPayment = minimumInitialPayment.HasValue ? 0 : costSummary.DiscountedCost;
+                                costSummary.MinPayment = minimumInitialPaymentPerRegistrant.HasValue ? 0 : costSummary.DiscountedCost;
 
                                 costs.Add( costSummary );
                             }
@@ -4963,6 +4976,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 minimumPayment = 0.0M;
+                defaultPayment = null;
 
                 // If there were any costs
                 if ( costs.Where( c => c.Cost > 0.0M ).Any() )
@@ -4972,6 +4986,11 @@ namespace RockWeb.Blocks.Event
 
                     // Get the total min payment for all costs and fees
                     minimumPayment = costs.Sum( c => c.MinPayment );
+
+                    if ( costs.Any( c => c.DefaultPayment.HasValue ) )
+                    {
+                        defaultPayment = costs.Where( c => c.DefaultPayment.HasValue ).Sum( c => c.DefaultPayment.Value );
+                    }
 
                     // Add row for amount discount
                     if ( RegistrationState.DiscountAmount > 0.0m )
@@ -5020,6 +5039,8 @@ namespace RockWeb.Blocks.Event
 
                     // Calculate balance due, and if a partial payment is still allowed
                     decimal balanceDue = RegistrationState.DiscountedCost - RegistrationState.PreviousPaymentTotal;
+
+                    // if there is a minimum amount defined (and it is less than the balance due), let a partial payment be specified
                     bool allowPartialPayment = balanceDue > 0 && minimumPayment.Value < balanceDue;
 
                     // If partial payment is allowed, show the minimum payment due
@@ -5032,10 +5053,11 @@ namespace RockWeb.Blocks.Event
                         RegistrationState.PaymentAmount.Value < minimumPayment.Value ||
                         RegistrationState.PaymentAmount.Value > balanceDue )
                     {
-                        if ( defaultPaymentAmount.HasValue && ( defaultPaymentAmount >= minimumPayment && defaultPaymentAmount <= balanceDue ) )
+                        if ( defaultPayment.HasValue && ( defaultPayment >= minimumPayment && defaultPayment <= balanceDue ) )
                         {
-                            // if there is defaultPayment set, make that amount as long it is more than the minimumPayment and not more than the balanceDue
-                            RegistrationState.PaymentAmount = defaultPaymentAmount;
+                            // if there is defaultPayment set, make that the payment amount as long it is more than the minimumPayment and not more than the balanceDue
+                            // NOTE: if the configured 'Minimum Initial Payment' is null, the minimumPayment is the full amount, so the 'Default Payment Amount' option would be ignored
+                            RegistrationState.PaymentAmount = defaultPayment;
                         }
                         else
                         {
