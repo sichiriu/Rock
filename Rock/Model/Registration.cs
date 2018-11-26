@@ -1320,7 +1320,20 @@ Registration By: {0} Total Cost/Fees:{1}
         public string GetFirstName( RegistrationTemplate template )
         {
             object value = GetPersonFieldValue( template, RegistrationPersonFieldType.FirstName );
-            return value != null ? value.ToString() : string.Empty;
+            if ( value == null )
+            {
+                // if FirstName isn't prompted for in a registration form, and using an existing Person, get the person's FirstName/NickName from the database
+                if ( this.PersonId.HasValue )
+                {
+                    return new PersonService( new RockContext() ).GetSelect( this.PersonId.Value, s => s.NickName ) ?? string.Empty;
+                }
+            }
+            else
+            {
+                return value.ToString();
+            }
+
+            return string.Empty;
         }
 
         /// <summary>
@@ -1331,7 +1344,20 @@ Registration By: {0} Total Cost/Fees:{1}
         public string GetLastName( RegistrationTemplate template )
         {
             object value = GetPersonFieldValue( template, RegistrationPersonFieldType.LastName );
-            return value != null ? value.ToString() : string.Empty;
+            if ( value == null )
+            {
+                // if LastName isn't prompted for in a registration form, and using an existing Person, get the person's lastname from the database
+                if ( this.PersonId.HasValue )
+                {
+                    return new PersonService( new RockContext() ).GetSelect( this.PersonId.Value, s => s.LastName ) ?? string.Empty;
+                }
+            }
+            else
+            {
+                return value.ToString();
+            }
+
+            return string.Empty;
         }
 
         /// <summary>
@@ -1342,7 +1368,20 @@ Registration By: {0} Total Cost/Fees:{1}
         public string GetEmail( RegistrationTemplate template )
         {
             object value = GetPersonFieldValue( template, RegistrationPersonFieldType.Email );
-            return value != null ? value.ToString() : string.Empty;
+            if ( value == null )
+            {
+                // if Email isn't prompted for in a registration form, and using an existing Person, get the person's email from the database
+                if ( this.PersonId.HasValue )
+                {
+                    return new PersonService( new RockContext() ).GetSelect( this.PersonId.Value, s => s.Email ) ?? string.Empty;
+                }
+            }
+            else
+            {
+                return value.ToString();
+            }
+
+            return string.Empty;
         }
 
         /// <summary>
