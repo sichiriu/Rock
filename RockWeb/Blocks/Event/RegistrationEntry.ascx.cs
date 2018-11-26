@@ -4102,23 +4102,13 @@ namespace RockWeb.Blocks.Event
                         value = previousRegistrant.FieldValues[field.Id].FieldValue;
                     }
 
-                    if ( !string.IsNullOrWhiteSpace( field.PreText ) )
-                    {
-                        phRegistrantControls.Controls.Add( new LiteralControl( field.PreText ) );
-                    }
-
                     if ( field.FieldSource == RegistrationFieldSource.PersonField )
                     {
-                        CreatePersonField( field, setValues, value, familyMemberSelected );
+                        CreatePersonField( field, setValues, value, familyMemberSelected, BlockValidationGroup, phRegistrantControls );
                     }
                     else
                     {
-                        CreateAttributeField( form, field, setValues, value );
-                    }
-
-                    if ( !string.IsNullOrWhiteSpace( field.PostText ) )
-                    {
-                        phRegistrantControls.Controls.Add( new LiteralControl( field.PostText ) );
+                        CreateAttributeField( form, field, setValues, value, GetAttributeValue( "ShowFieldDescriptions" ).AsBoolean(), BlockValidationGroup, phRegistrantControls );
                     }
                 }
 
@@ -4149,276 +4139,23 @@ namespace RockWeb.Blocks.Event
         /// <param name="field">The field.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="fieldValue">The field value.</param>
-        private void CreatePersonField( RegistrationTemplateFormField field, bool setValue, object fieldValue, bool familyMemberSelected )
+        private static void CreatePersonField( RegistrationTemplateFormField field, bool setValue, object fieldValue, bool familyMemberSelected, string validationGroup, Control parentControl )
         {
-            switch ( field.PersonFieldType )
+            Control personFieldControl = field.GetPersonControl( setValue, fieldValue, familyMemberSelected, validationGroup );
+
+            if ( personFieldControl != null )
             {
-                case RegistrationPersonFieldType.FirstName:
-                    var tbFirstName = new RockTextBox
-                    {
-                        ID = "tbFirstName",
-                        Label = "First Name",
-                        Required = field.IsRequired,
-                        CssClass = "js-first-name",
-                        ValidationGroup = BlockValidationGroup,
-                        Enabled = !familyMemberSelected,
-                        Text = setValue && fieldValue != null ? fieldValue.ToString() : string.Empty
-                    };
+                if ( !string.IsNullOrWhiteSpace( field.PreText ) )
+                {
+                    parentControl.Controls.Add( new LiteralControl( field.PreText ) );
+                }
 
-                    phRegistrantControls.Controls.Add( tbFirstName );
-                    break;
+                parentControl.Controls.Add( personFieldControl );
 
-                case RegistrationPersonFieldType.LastName:
-                    var tbLastName = new RockTextBox
-                    {
-                        ID = "tbLastName",
-                        Label = "Last Name",
-                        Required = field.IsRequired,
-                        ValidationGroup = BlockValidationGroup,
-                        Enabled = !familyMemberSelected,
-                        Text = setValue && fieldValue != null ? fieldValue.ToString() : string.Empty
-                    };
-
-                    phRegistrantControls.Controls.Add( tbLastName );
-                    break;
-
-                case RegistrationPersonFieldType.MiddleName:
-                    var tbMiddleName = new RockTextBox
-                    {
-                        ID = "tbMiddleName",
-                        Label = "Middle Name",
-                        Required = field.IsRequired,
-                        ValidationGroup = BlockValidationGroup,
-                        Enabled = !familyMemberSelected,
-                        Text = setValue && fieldValue != null ? fieldValue.ToString() : string.Empty
-                    };
-
-                    phRegistrantControls.Controls.Add( tbMiddleName );
-                    break;
-
-                case RegistrationPersonFieldType.Campus:
-                    var cpHomeCampus = new CampusPicker
-                    {
-                        ID = "cpHomeCampus",
-                        Label = "Campus",
-                        Required = field.IsRequired,
-                        ValidationGroup = BlockValidationGroup,
-                        Campuses = CampusCache.All( false ),
-                        SelectedCampusId = setValue && fieldValue != null ? fieldValue.ToString().AsIntegerOrNull() : null
-                    };
-
-                    phRegistrantControls.Controls.Add( cpHomeCampus );
-                    break;
-
-                case RegistrationPersonFieldType.Address:
-                    var acAddress = new AddressControl
-                    {
-                        ID = "acAddress",
-                        Label = "Address",
-                        UseStateAbbreviation = true,
-                        UseCountryAbbreviation = false,
-                        Required = field.IsRequired,
-                        ValidationGroup = BlockValidationGroup
-                    };
-
-                    if ( setValue && fieldValue != null )
-                    {
-                        acAddress.SetValues( fieldValue as Location );
-                    }
-
-                    phRegistrantControls.Controls.Add( acAddress );
-                    break;
-
-                case RegistrationPersonFieldType.Email:
-                    var tbEmail = new EmailBox
-                    {
-                        ID = "tbEmail",
-                        Label = "Email",
-                        Required = field.IsRequired,
-                        ValidationGroup = BlockValidationGroup,
-                        Text = setValue && fieldValue != null ? fieldValue.ToString() : string.Empty
-                    };
-
-                    phRegistrantControls.Controls.Add( tbEmail );
-                    break;
-
-                case RegistrationPersonFieldType.Birthdate:
-                    var bpBirthday = new BirthdayPicker
-                    {
-                        ID = "bpBirthday",
-                        Label = "Birthday",
-                        Required = field.IsRequired,
-                        ValidationGroup = BlockValidationGroup,
-                        SelectedDate = setValue && fieldValue != null ? fieldValue as DateTime? : null
-                    };
-
-                    phRegistrantControls.Controls.Add( bpBirthday );
-                    break;
-
-                case RegistrationPersonFieldType.Grade:
-                    var gpGrade = new GradePicker
-                    {
-                        ID = "gpGrade",
-                        Label = "Grade",
-                        Required = field.IsRequired,
-                        ValidationGroup = BlockValidationGroup,
-                        UseAbbreviation = true,
-                        UseGradeOffsetAsValue = true,
-                        CssClass = "input-width-md"
-                    };
-
-                    phRegistrantControls.Controls.Add( gpGrade );
-
-                    if ( setValue && fieldValue != null )
-                    {
-                        var value = fieldValue.ToString().AsIntegerOrNull();
-                        gpGrade.SetValue( Person.GradeOffsetFromGraduationYear( value ) );
-                    }
-
-                    break;
-
-                case RegistrationPersonFieldType.Gender:
-                    var ddlGender = new RockDropDownList
-                    {
-                        ID = "ddlGender",
-                        Label = "Gender",
-                        Required = field.IsRequired,
-                        ValidationGroup = BlockValidationGroup,
-                    };
-
-                    ddlGender.BindToEnum<Gender>( true, new Gender[1] { Gender.Unknown } );
-
-                    phRegistrantControls.Controls.Add( ddlGender );
-
-                    if ( setValue && fieldValue != null )
-                    {
-                        var value = fieldValue.ToString().ConvertToEnumOrNull<Gender>() ?? Gender.Unknown;
-                        ddlGender.SetValue( value.ConvertToInt() );
-                    }
-
-                    break;
-
-                case RegistrationPersonFieldType.MaritalStatus:
-                    var dvpMaritalStatus = new DefinedValuePicker
-                    {
-                        ID = "dvpMaritalStatus",
-                        Label = "Marital Status",
-                        Required = field.IsRequired,
-                        ValidationGroup = BlockValidationGroup
-                    };
-
-                    dvpMaritalStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ).Id;
-                    phRegistrantControls.Controls.Add( dvpMaritalStatus );
-
-                    if ( setValue && fieldValue != null )
-                    {
-                        var value = fieldValue.ToString().AsInteger();
-                        dvpMaritalStatus.SetValue( value );
-                    }
-
-                    break;
-
-                case RegistrationPersonFieldType.AnniversaryDate:
-                    var dppAnniversaryDate = new DatePartsPicker
-                    {
-                        ID = "dppAnniversaryDate",
-                        Label = "Anniversary Date",
-                        Required = field.IsRequired,
-                        ValidationGroup = BlockValidationGroup,
-                        SelectedDate = setValue && fieldValue != null ? fieldValue as DateTime? : null
-                    };
-
-                    phRegistrantControls.Controls.Add( dppAnniversaryDate );
-                    break;
-
-                case RegistrationPersonFieldType.MobilePhone:
-                    var dvMobilePhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
-                    if ( dvMobilePhone == null )
-                    {
-                        break;
-                    }
-
-                    var ppMobile = new PhoneNumberBox
-                    {
-                        ID = "ppMobile",
-                        Label = dvMobilePhone.Value,
-                        Required = field.IsRequired,
-                        ValidationGroup = BlockValidationGroup,
-                        CountryCode = PhoneNumber.DefaultCountryCode()
-                    };
-
-                    var mobilePhoneNumber = setValue && fieldValue != null ? fieldValue as PhoneNumber : null;
-                    ppMobile.CountryCode = mobilePhoneNumber != null ? mobilePhoneNumber.CountryCode : string.Empty;
-                    ppMobile.Number = mobilePhoneNumber != null ? mobilePhoneNumber.ToString() : string.Empty;
-
-                    phRegistrantControls.Controls.Add( ppMobile );
-                    break;
-
-                case RegistrationPersonFieldType.HomePhone:
-                    var dvHomePhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
-                    if ( dvHomePhone == null )
-                    {
-                        break;
-                    }
-
-                    var ppHome = new PhoneNumberBox
-                    {
-                        ID = "ppHome",
-                        Label = dvHomePhone.Value,
-                        Required = field.IsRequired,
-                        ValidationGroup = BlockValidationGroup,
-                        CountryCode = PhoneNumber.DefaultCountryCode()
-                    };
-
-                    var homePhoneNumber = setValue && fieldValue != null ? fieldValue as PhoneNumber : null;
-                    ppHome.CountryCode = homePhoneNumber != null ? homePhoneNumber.CountryCode : string.Empty;
-                    ppHome.Number = homePhoneNumber != null ? homePhoneNumber.ToString() : string.Empty;
-
-                    phRegistrantControls.Controls.Add( ppHome );
-                    break;
-
-                case RegistrationPersonFieldType.WorkPhone:
-                    var dvWorkPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK );
-                    if ( dvWorkPhone == null )
-                    {
-                        break;
-                    }
-
-                    var ppWork = new PhoneNumberBox
-                    {
-                        ID = "ppWork",
-                        Label = dvWorkPhone.Value,
-                        Required = field.IsRequired,
-                        ValidationGroup = BlockValidationGroup,
-                        CountryCode = PhoneNumber.DefaultCountryCode()
-                    };
-
-                    var workPhoneNumber = setValue && fieldValue != null ? fieldValue as PhoneNumber : null;
-                    ppWork.CountryCode = workPhoneNumber != null ? workPhoneNumber.CountryCode : string.Empty;
-                    ppWork.Number = workPhoneNumber != null ? workPhoneNumber.ToString() : string.Empty;
-
-                    phRegistrantControls.Controls.Add( ppWork );
-                    break;
-
-                case RegistrationPersonFieldType.ConnectionStatus:
-                    var dvpConnectionStatus = new DefinedValuePicker
-                    {
-                        ID = "dvpConnectionStatus",
-                        Label = "Connection Status",
-                        Required = field.IsRequired,
-                        ValidationGroup = BlockValidationGroup
-                    };
-
-                    dvpConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ).Id;
-
-                    if ( setValue && fieldValue != null )
-                    {
-                        var value = fieldValue.ToString().AsInteger();
-                        dvpConnectionStatus.SetValue( value );
-                    }
-
-                    phRegistrantControls.Controls.Add( dvpConnectionStatus );
-                    break;
+                if ( !string.IsNullOrWhiteSpace( field.PostText ) )
+                {
+                    parentControl.Controls.Add( new LiteralControl( field.PostText ) );
+                }
             }
         }
 
@@ -4429,7 +4166,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="field">The field.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="fieldValue">The field value.</param>
-        private void CreateAttributeField( RegistrationTemplateForm form, RegistrationTemplateFormField field, bool setValue, object fieldValue )
+        private static void CreateAttributeField( RegistrationTemplateForm form, RegistrationTemplateFormField field, bool setValue, object fieldValue, bool showFieldDescriptions, string validationGroup, Control parentControl )
         {
             if ( field.AttributeId.HasValue )
             {
@@ -4443,7 +4180,7 @@ namespace RockWeb.Blocks.Event
                     value = attribute.DefaultValue;
                 }
 
-                string helpText = GetAttributeValue( "ShowFieldDescriptions" ).AsBoolean() ? field.Attribute.Description : string.Empty;
+                string helpText = showFieldDescriptions ? field.Attribute.Description : string.Empty;
                 FieldVisibilityWrapper fieldVisibilityWrapper = new FieldVisibilityWrapper
                 {
                     ID = "_fieldVisibilityWrapper_attribute_" + attribute.Id.ToString(),
@@ -4451,12 +4188,25 @@ namespace RockWeb.Blocks.Event
                     FieldVisibilityRules = field.FieldVisibilityRules
                 };
 
-                fieldVisibilityWrapper.EditValueUpdated += FieldVisibilityWrapper_EditValueUpdated;
+                fieldVisibilityWrapper.EditValueUpdated += ( object sender, FieldVisibilityWrapper.FieldEventArgs args ) =>
+                {
+                    FieldVisibilityWrapper.ApplyFieldVisibilityRules( parentControl );
+                };
 
-                phRegistrantControls.Controls.Add( fieldVisibilityWrapper );
+                parentControl.Controls.Add( fieldVisibilityWrapper );
 
-                var editControl = attribute.AddControl( fieldVisibilityWrapper.Controls, value, BlockValidationGroup, setValue, true, field.IsRequired, null, helpText );
+                if ( !string.IsNullOrWhiteSpace( field.PreText ) )
+                {
+                    fieldVisibilityWrapper.Controls.Add( new LiteralControl( field.PreText ) );
+                }
+
+                var editControl = attribute.AddControl( fieldVisibilityWrapper.Controls, value, validationGroup, setValue, true, field.IsRequired, null, helpText );
                 fieldVisibilityWrapper.EditControl = editControl;
+
+                if ( !string.IsNullOrWhiteSpace( field.PostText ) )
+                {
+                    fieldVisibilityWrapper.Controls.Add( new LiteralControl( field.PostText ) );
+                }
 
                 bool hasDependantVisibilityRule = form.Fields.Any( a => a.FieldVisibilityRules.Any( r => r.ComparedToAttributeGuid == attribute.Guid ) );
 
@@ -4468,16 +4218,6 @@ namespace RockWeb.Blocks.Event
                      } );
                 }
             }
-        }
-
-        /// <summary>
-        /// Handles the EditValueUpdated event of the FieldVisibilityWrapper control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="args">The <see cref="FieldVisibilityWrapper.FieldEventArgs"/> instance containing the event data.</param>
-        private void FieldVisibilityWrapper_EditValueUpdated( object sender, FieldVisibilityWrapper.FieldEventArgs args )
-        {
-            FieldVisibilityWrapper.ApplyFieldVisibilityRules( phRegistrantControls );
         }
 
         /// <summary>
