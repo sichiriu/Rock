@@ -191,7 +191,8 @@ namespace Rock.Model
                 RegistrantPerson = a.RegistrationRegistrant.PersonAlias.Person,
                 RegistrantId = a.RegistrationRegistrantId,
                 FeeName = a.RegistrationTemplateFee.Name,
-                Option = a.Option,
+                FeeItemOption = a.Option,
+                FeeItem = a.RegistrationTemplateFeeItem,
                 Quantity = a.Quantity,
                 Cost = a.Cost
             } ).ToList();
@@ -278,12 +279,47 @@ namespace Rock.Model
         public string FeeName { get; set; }
 
         /// <summary>
+        /// Gets the name of the fee item.
+        /// </summary>
+        /// <value>
+        /// The name of the fee item.
+        /// </value>
+        public string FeeItemName
+        {
+            get
+            {
+                if (this.FeeItem != null)
+                {
+                    return this.FeeItem.Name;
+                }
+                else
+                {
+                    return this.FeeItemOption;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the option.
         /// </summary>
         /// <value>
         /// The option.
+        /// </value> [RockObsolete( "1.9" )]
+        [Obsolete( "Use FeeItemName instead" )]
+        public string Option
+        {
+            get => FeeItemOption;
+            set => FeeItemOption = value;
+        }
+       
+
+        /// <summary>
+        /// Gets or sets the fee item option.
+        /// </summary>
+        /// <value>
+        /// The fee item option.
         /// </value>
-        public string Option { get; set; }
+        public string FeeItemOption { get; set; }
 
         /// <summary>
         /// Gets or sets the quantity.
@@ -308,5 +344,13 @@ namespace Rock.Model
         /// The fee total.
         /// </value>
         public decimal FeeTotal => Quantity * Cost;
+
+        /// <summary>
+        /// Gets the fee item.
+        /// </summary>
+        /// <value>
+        /// The fee item.
+        /// </value>
+        public RegistrationTemplateFeeItem FeeItem { get; internal set; }
     }
 }

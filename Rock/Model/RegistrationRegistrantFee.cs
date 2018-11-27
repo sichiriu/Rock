@@ -77,7 +77,7 @@ namespace Rock.Model
         public int Quantity { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the FeeItem that was selected. See also <seealso cref="RegistrationTemplateFeeItem"/>.
+        /// Gets or sets the name of the FeeItem that was selected at the time of the registration. See also <seealso cref="RegistrationTemplateFeeItem"/>.
         /// </summary>
         /// <value>
         /// The option.

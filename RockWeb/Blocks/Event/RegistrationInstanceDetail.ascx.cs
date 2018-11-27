@@ -4523,7 +4523,7 @@ namespace RockWeb.Blocks.Event
             }
 
             // Fee Name
-            if (ddlFeeName.SelectedIndex > 0 )
+            if ( ddlFeeName.SelectedIndex > 0 )
             {
                 data = data.Where( r => r.FeeName == ddlFeeName.SelectedItem.Text );
             }
@@ -4531,7 +4531,7 @@ namespace RockWeb.Blocks.Event
             // Fee Options
             if ( cblFeeOptions.SelectedValues.Count > 0 )
             {
-                data = data.Where( r => cblFeeOptions.SelectedValues.Contains( r.Option ) );
+                data = data.Where( r => cblFeeOptions.SelectedValues.Any( v => v.Equals( r.FeeItem.Guid.ToString(), StringComparison.OrdinalIgnoreCase) ) );
             }
 
             SortProperty sortProperty = gFees.SortProperty;
@@ -4599,7 +4599,7 @@ namespace RockWeb.Blocks.Event
 
                 foreach ( var feeItem in feeItems )
                 {
-                    cblFeeOptions.Items.Add( new ListItem( feeItem.Name, feeItem.Guid.ToJson() ) );
+                    cblFeeOptions.Items.Add( new ListItem( feeItem.Name, feeItem.Guid.ToString() ) );
                 }
 
                 string feeOptionValues = fFees.GetUserPreference( "FeeOptions" );
