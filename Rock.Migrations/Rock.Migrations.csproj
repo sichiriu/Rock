@@ -144,9 +144,13 @@
     <Compile Include="Migrations\201811221702005_AddEngagementStrengthToChannel.Designer.cs">
       <DependentUpon>201811221702005_AddEngagementStrengthToChannel.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201811261932371_RegistrationTemplateFeeItem.cs" />
-    <Compile Include="Migrations\201811261932371_RegistrationTemplateFeeItem.Designer.cs">
-      <DependentUpon>201811261932371_RegistrationTemplateFeeItem.cs</DependentUpon>
+    <Compile Include="Migrations\201811271852316_Rollup_1127.cs" />
+    <Compile Include="Migrations\201811271852316_Rollup_1127.Designer.cs">
+      <DependentUpon>201811271852316_Rollup_1127.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201811272108424_RegistrationTemplateFeeItem.cs" />
+    <Compile Include="Migrations\201811272108424_RegistrationTemplateFeeItem.Designer.cs">
+      <DependentUpon>201811272108424_RegistrationTemplateFeeItem.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.Designer.cs">
@@ -497,8 +501,11 @@
     <EmbeddedResource Include="Migrations\201811221702005_AddEngagementStrengthToChannel.resx">
       <DependentUpon>201811221702005_AddEngagementStrengthToChannel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201811261932371_RegistrationTemplateFeeItem.resx">
-      <DependentUpon>201811261932371_RegistrationTemplateFeeItem.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201811271852316_Rollup_1127.resx">
+      <DependentUpon>201811271852316_Rollup_1127.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201811272108424_RegistrationTemplateFeeItem.resx">
+      <DependentUpon>201811272108424_RegistrationTemplateFeeItem.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -753,6 +760,12 @@
     </Content>
     <Content Include="Migrations\201810301818354_Rollup_1030_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
       <DependentUpon>201810301818354_Rollup_1030.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Down.sql">
+      <DependentUpon>201811271852316_Rollup_1127.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Up.sql">
+      <DependentUpon>201811271852316_Rollup_1127.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.sql">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
