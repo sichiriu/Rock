@@ -433,9 +433,9 @@ namespace RockWeb.Blocks.Cms
 //            }
 //        }
 
-        /// <summary>
-        /// Binds the grid.
-        /// </summary>
+/// <summary>
+/// Binds the grid.
+/// </summary>
         private void BindGrid()
         {
             var htmlContentService = new HtmlContentService( new RockContext() );

@@ -2918,7 +2918,8 @@ namespace Rock.Lava
                     .AsNoTracking()
                     .Where( m =>
                         m.PersonId == person.Id &&
-                        m.Group.GroupTypeId == numericalGroupTypeId.Value );
+                        m.Group.GroupTypeId == numericalGroupTypeId.Value &&
+                        m.Group.IsActive && !m.Group.IsArchived );
 
                 if ( groupStatus != "All" )
                 {
@@ -2965,7 +2966,7 @@ namespace Rock.Lava
                     .Where( m =>
                         m.PersonId == person.Id &&
                         m.Group.Id == numericalGroupId.Value &&
-                        m.Group.IsActive );
+                        m.Group.IsActive && !m.Group.IsArchived );
 
                 if ( status != "All" )
                 {
@@ -3020,22 +3021,20 @@ namespace Rock.Lava
             var person = GetPerson( input );
             int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
 
-            if ( person != null && numericalGroupTypeId.HasValue )
+            if ( person == null && !numericalGroupTypeId.HasValue )
             {
-                var attendance = new AttendanceService( GetRockContext( context ) ).Queryable( "Group" )
-                    .AsNoTracking()
-                    .Where( a =>
-                        a.Occurrence.Group != null &&
-                        a.Occurrence.Group.GroupTypeId == numericalGroupTypeId &&
-                        a.PersonAlias.PersonId == person.Id &&
-                        a.DidAttend == true )
-                    .OrderByDescending( a => a.StartDateTime )
-                    .FirstOrDefault();
-
-                return attendance;
+                return new Attendance();
             }
 
-            return new Attendance();
+            return new AttendanceService( GetRockContext( context ) ).Queryable()
+                .AsNoTracking()
+                .Where( a =>
+                    a.Occurrence.Group != null &&
+                    a.Occurrence.Group.GroupTypeId == numericalGroupTypeId &&
+                    a.PersonAlias.PersonId == person.Id &&
+                    a.DidAttend == true )
+                .OrderByDescending( a => a.StartDateTime )
+                .FirstOrDefault();
         }
 
         /// <summary>
@@ -4975,6 +4974,7 @@ namespace Rock.Lava
         /// Returns the amount string as a proper int for the color functions.
         /// </summary>
         /// <param name="amount">The amount.</param>
+        /// <param name="unit">The unit.</param>
         /// <returns></returns>
         private static int CleanColorAmount( string amount, string unit = "%" )
         {

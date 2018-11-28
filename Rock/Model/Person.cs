@@ -1867,10 +1867,10 @@ namespace Rock.Model
 
                 if ( isInactive )
                 {
-                    // If person was just inactivated, update the group member status for all their group memberships to be inactive
                     var dbPropertyEntry = entry.Property( "RecordStatusValueId" );
                     if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
-                    {
+                    {   
+                        // If person was just inactivated, update the group member status for all their group memberships to be inactive
                         foreach ( var groupMember in new GroupMemberService( rockContext )
                             .Queryable()
                             .Where( m =>
@@ -1880,9 +1880,25 @@ namespace Rock.Model
                         {
                             groupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
                         }
+
+                        // Also update the person's connection requests
+                        int[] aliasIds = Aliases.Select( a => a.Id ).ToArray();
+                        foreach ( var connectionRequest in new ConnectionRequestService( rockContext )
+                            .Queryable()
+                            .Where( c =>
+                                 aliasIds.Contains( c.PersonAliasId ) &&
+                                 c.ConnectionState != ConnectionState.Inactive &&
+                                 c.ConnectionState != ConnectionState.Connected ) )
+                        {
+                            connectionRequest.ConnectionState = ConnectionState.Inactive;
+                        }
                     }
                 }
             }
+
+            RecordTypeValueId = RecordTypeValueId ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+            RecordStatusValueId = RecordStatusValueId ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+            ConnectionStatusValueId = ConnectionStatusValueId ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() ).Id;
 
             if ( string.IsNullOrWhiteSpace( NickName ) )
             {
@@ -1980,7 +1996,7 @@ namespace Rock.Model
                         {
                             PersonAlias = this.Aliases.First(),
                             SearchTypeValueId = alternateValueId,
-                            SearchValue = PersonSearchKeyService.GenerateRandomAlternateId( true )
+                            SearchValue = PersonSearchKeyService.GenerateRandomAlternateId( true, rockContext )
                         };
                         personSearchKeyService.Add( personSearchKey );
 
@@ -2090,6 +2106,7 @@ namespace Rock.Model
 
             base.PostSaveChanges( dbContext );
 
+            // NOTE: This is also done on GroupMember.PostSaveChanges in case Role or family membership changes
             PersonService.UpdatePersonAgeClassification( this.Id, dbContext as RockContext );
             PersonService.UpdatePrimaryFamily( this.Id, dbContext as RockContext );
         }
