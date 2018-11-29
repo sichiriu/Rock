@@ -1336,6 +1336,7 @@ namespace Rock.Data
 
         /// <summary>
         /// Adds a new EntityType Attribute for the given EntityType, FieldType, and name (key).
+        /// NOTE: If the Attribute already exists, it will be deleted and recreated. So consider using UpdateEntityAttribute instead
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="fieldTypeGuid">The field type GUID.</param>
@@ -1394,7 +1395,7 @@ namespace Rock.Data
                     name.Replace( "'", "''" ),
                     description.Replace( "'", "''" ),
                     order,
-                    defaultValue,
+                    defaultValue.Replace( "'", "''" ),
                     guid,
                     entityTypeQualifierColumn,
                     entityTypeQualifierValue )
@@ -1606,7 +1607,7 @@ namespace Rock.Data
                     name,
                     description.Replace( "'", "''" ),
                     order,
-                    defaultValue,
+                    defaultValue.Replace( "'", "''" ),
                     guid,
                     entityTypeQualifierColumn,
                     entityTypeQualifierValue )
@@ -1905,7 +1906,7 @@ namespace Rock.Data
 ",
                     attributeGuid, // {0}
                     key, // {1}
-                    value, // {2}
+                    value.Replace( "'", "''" ), // {2}
                     guid ) // {3}
             );
         }
@@ -5764,7 +5765,7 @@ END
         #region Reports
 
         /// <summary>
-        /// Adds a report.
+        /// Adds a report if the provided GUID does not already exist. Does nothing if the report already exists.
         /// </summary>
         /// <param name="categoryGuid">The category unique identifier.</param>
         /// <param name="dataViewGuid">The data view unique identifier.</param>
@@ -5838,7 +5839,7 @@ END
         }
 
         /// <summary>
-        /// Adds a report field to a report
+        /// Adds a report field to a report if the provided GUID does not exists. Does nothing if the report field already exists.
         /// </summary>
         /// <param name="reportGuid">The report unique identifier.</param>
         /// <param name="reportFieldType">Type of the report field.</param>

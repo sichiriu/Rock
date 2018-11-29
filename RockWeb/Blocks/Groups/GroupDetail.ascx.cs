@@ -1222,6 +1222,12 @@ namespace RockWeb.Blocks.Groups
             if ( !groupId.Equals( 0 ) )
             {
                 group = GetGroup( groupId, rockContext );
+                if ( group == null )
+                {
+                    pnlDetails.Visible = false;
+                    nbNotFoundOrArchived.Visible = true;
+                    return;
+                }
             }
 
             if ( group == null )
@@ -1685,7 +1691,17 @@ namespace RockWeb.Blocks.Groups
             {
                 groupIconHtml = !string.IsNullOrWhiteSpace( groupType.IconCssClass ) ?
                     string.Format( "<i class='{0}' ></i>", groupType.IconCssClass ) : string.Empty;
-                hlType.Text = groupType.Name;
+
+                if ( groupType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+                {
+                    var groupTypeDetailPage = new PageReference( Rock.SystemGuid.Page.GROUP_TYPE_DETAIL ).BuildUrl();
+                    hlType.Text = string.Format( "<a href='{0}?groupTypeId={1}'>{2}</a>", groupTypeDetailPage, groupType.Id, groupType.Name );
+                }
+                else
+                {
+                    hlType.Text = groupType.Name;
+                }
+                hlType.ToolTip = groupType.Description;
             }
 
             hfGroupId.SetValue( group.Id );

@@ -289,18 +289,18 @@ namespace RockWeb.Blocks.Groups
 
             if ( mergeTemplate == null )
             {
-                this.LogException( new Exception( "No Merge Template specified in block settings" ) );
+                this.LogException( new Exception( "Error printing Attendance Roster: No merge template selected. Please configure an 'Attendance Roster Template' in the block settings." ) );
                 nbPrintRosterWarning.Visible = true;
-                nbPrintRosterWarning.Text = "Unable to print Attendance Roster";
+                nbPrintRosterWarning.Text = "Unable to print Attendance Roster: No merge template selected. Please configure an 'Attendance Roster Template' in the block settings.";
                 return;
             }
 
             MergeTemplateType mergeTemplateType = mergeTemplate.GetMergeTemplateType();
             if ( mergeTemplateType == null )
             {
-                this.LogException( new Exception( "Unable to determine Merge Template Type" ) );
+                this.LogException( new Exception( "Error printing Attendance Roster: Unable to determine Merge Template Type from the 'Attendance Roster Template' in the block settings." ) );
                 nbPrintRosterWarning.Visible = true;
-                nbPrintRosterWarning.Text = "Error printing Attendance Roster";
+                nbPrintRosterWarning.Text = "Error printing Attendance Roster: Unable to determine Merge Template Type from the 'Attendance Roster Template' in the block settings.";
                 return;
             }
 
@@ -740,7 +740,8 @@ namespace RockWeb.Blocks.Groups
                         .Where( a =>
                             a.OccurrenceId == _occurrence.Id &&
                             a.DidAttend.HasValue &&
-                            a.DidAttend.Value )
+                            a.DidAttend.Value &&
+                            a.PersonAlias != null)
                         .Select( a => a.PersonAlias.PersonId )
                         .Distinct()
                         .ToList();
@@ -954,6 +955,15 @@ namespace RockWeb.Blocks.Groups
                     }
                     else
                     {
+                        _occurrence.Schedule = _occurrence.Schedule == null && _occurrence.ScheduleId.HasValue ? new ScheduleService( rockContext ).Get( _occurrence.ScheduleId.Value ) : _occurrence.Schedule;
+
+                        cvAttendance.IsValid = _occurrence.IsValid;
+                        if ( !cvAttendance.IsValid )
+                        {
+                            cvAttendance.ErrorMessage = _occurrence.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                            return false;
+                        }
+
                         foreach ( var attendee in _attendees )
                         {
                             var attendance = existingAttendees
@@ -968,7 +978,7 @@ namespace RockWeb.Blocks.Groups
                                     attendance = new Attendance();
                                     attendance.PersonAliasId = personAliasId;
                                     attendance.CampusId = campusId;
-                                    attendance.StartDateTime = _occurrence.OccurrenceDate;
+                                    attendance.StartDateTime = _occurrence.Schedule != null && _occurrence.Schedule.HasSchedule() ? _occurrence.OccurrenceDate.Add( _occurrence.Schedule.StartTimeOfDay ) : _occurrence.OccurrenceDate;
 
                                     // check that the attendance record is valid
                                     cvAttendance.IsValid = attendance.IsValid;
@@ -1020,6 +1030,7 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
                 }
+                _occurrence.Id = occurrence.Id;
             }
 
             return true;
@@ -1032,9 +1043,11 @@ namespace RockWeb.Blocks.Groups
         {
             try
             {
+                var rockContext = new RockContext();
+                var occurrence = new AttendanceOccurrenceService( rockContext ).Get(_occurrence.Id);
                 var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 mergeObjects.Add( "Group", _group );
-                mergeObjects.Add( "AttendanceOccurrence", _occurrence );
+                mergeObjects.Add( "AttendanceOccurrence", occurrence );
                 mergeObjects.Add( "AttendanceNoteLabel", GetAttributeValue( "AttendanceNoteLabel" ) );
 
                 List<string> recipients = new List<string>();
