@@ -164,12 +164,16 @@ namespace Rock.Model
         /// A collection of <see cref="Rock.Model.Schedule"/> that are associated with this GroupLocation.
         /// </value>
         [DataMember]
-        public virtual ICollection<Schedule> Schedules => GroupLocationSchedules.Select( a => a.Schedule );
+        public virtual ICollection<Schedule> Schedules { get; set; } = new Collection<Schedule>();
 
-
-
+        /// <summary>
+        /// Gets or sets properties that are specific to Group+Location+Schedule 
+        /// </summary>
+        /// <value>
+        /// The group location schedule configs.
+        /// </value>
         [DataMember]
-        public virtual ICollection<GroupLocationScheduleConfig> GroupLocationSchedules { get; set; } = new Collection<GroupLocationScheduleConfig>();
+        public virtual ICollection<GroupLocationScheduleConfig> GroupLocationScheduleConfigs { get; set; } = new Collection<GroupLocationScheduleConfig>();
 
         /// <summary>
         /// Gets or sets the history changes.
@@ -287,6 +291,7 @@ namespace Rock.Model
             this.HasRequired( t => t.Location ).WithMany( l => l.GroupLocations).HasForeignKey( t => t.LocationId );
             this.HasOptional( t => t.GroupLocationTypeValue ).WithMany().HasForeignKey( t => t.GroupLocationTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.GroupMemberPersonAlias ).WithMany().HasForeignKey( t => t.GroupMemberPersonAliasId ).WillCascadeOnDelete( true );
+            this.HasMany( t => t.Schedules ).WithMany().Map( t => { t.MapLeftKey( "GroupLocationId" ); t.MapRightKey( "ScheduleId" ); t.ToTable( "GroupLocationSchedule" ); } );
         }
     }
 

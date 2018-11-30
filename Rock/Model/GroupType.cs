@@ -650,7 +650,7 @@ namespace Rock.Model
         public int? ScheduleCancellationWorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of days prior to the schedule to send a confirmation email.
+        /// Gets or sets the number of days prior to the schedule to send a confirmation email. See also <seealso cref="GroupMember.ScheduleConfirmationEmailOffsetDays"/>.
         /// </summary>
         /// <value>
         /// The schedule confirmation email offset days.

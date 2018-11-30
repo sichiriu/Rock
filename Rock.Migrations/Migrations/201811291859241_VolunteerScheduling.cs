@@ -22,15 +22,27 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class VSchedule : Rock.Migrations.RockMigration
+    public partial class VolunteerScheduling : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            DropForeignKey("dbo.GroupLocationSchedule", "GroupLocationId", "dbo.GroupLocation");
-            DropForeignKey("dbo.GroupLocationSchedule", "ScheduleId", "dbo.Schedule");
+            CreateTable(
+                "dbo.GroupLocationScheduleConfig",
+                c => new
+                    {
+                        GroupLocationId = c.Int(nullable: false),
+                        ScheduleId = c.Int(nullable: false),
+                        MinimumCapacity = c.Int(),
+                    })
+                .PrimaryKey(t => new { t.GroupLocationId, t.ScheduleId })
+                .ForeignKey("dbo.GroupLocation", t => t.GroupLocationId)
+                .ForeignKey("dbo.Schedule", t => t.ScheduleId)
+                .Index(t => t.GroupLocationId)
+                .Index(t => t.ScheduleId);
+            
             CreateTable(
                 "dbo.GroupMemberScheduleTemplate",
                 c => new
@@ -69,7 +81,6 @@ namespace Rock.Migrations
             AddColumn("dbo.GroupType", "ScheduleConfirmationEmailOffsetDays", c => c.Int());
             AddColumn("dbo.GroupType", "ScheduleReminderEmailOffsetDays", c => c.Int());
             AddColumn("dbo.GroupType", "RequiresReasonIfDeclineSchedule", c => c.Boolean(nullable: false));
-            AddColumn("dbo.GroupLocationSchedule", "MinimumCapacity", c => c.Int());
             CreateIndex("dbo.Group", "ScheduleCancellationPersonAliasId");
             CreateIndex("dbo.GroupType", "ScheduledCommunicationTemplateId");
             CreateIndex("dbo.GroupType", "ScheduleReminderCommunicationTemplateId");
@@ -78,8 +89,6 @@ namespace Rock.Migrations
             AddForeignKey("dbo.GroupType", "ScheduledCommunicationTemplateId", "dbo.CommunicationTemplate", "Id");
             AddForeignKey("dbo.GroupType", "ScheduleReminderCommunicationTemplateId", "dbo.CommunicationTemplate", "Id");
             AddForeignKey("dbo.Group", "ScheduleCancellationPersonAliasId", "dbo.PersonAlias", "Id");
-            AddForeignKey("dbo.GroupLocationSchedule", "GroupLocationId", "dbo.GroupLocation", "Id");
-            AddForeignKey("dbo.GroupLocationSchedule", "ScheduleId", "dbo.Schedule", "Id");
         }
         
         /// <summary>
@@ -87,8 +96,6 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            DropForeignKey("dbo.GroupLocationSchedule", "ScheduleId", "dbo.Schedule");
-            DropForeignKey("dbo.GroupLocationSchedule", "GroupLocationId", "dbo.GroupLocation");
             DropForeignKey("dbo.GroupMemberScheduleTemplate", "ScheduleId", "dbo.Schedule");
             DropForeignKey("dbo.GroupMemberScheduleTemplate", "ModifiedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.GroupMemberScheduleTemplate", "GroupTypeId", "dbo.GroupType");
@@ -97,6 +104,8 @@ namespace Rock.Migrations
             DropForeignKey("dbo.GroupType", "ScheduleReminderCommunicationTemplateId", "dbo.CommunicationTemplate");
             DropForeignKey("dbo.GroupType", "ScheduledCommunicationTemplateId", "dbo.CommunicationTemplate");
             DropForeignKey("dbo.GroupType", "ScheduleCancellationWorkflowTypeId", "dbo.WorkflowType");
+            DropForeignKey("dbo.GroupLocationScheduleConfig", "ScheduleId", "dbo.Schedule");
+            DropForeignKey("dbo.GroupLocationScheduleConfig", "GroupLocationId", "dbo.GroupLocation");
             DropIndex("dbo.GroupMemberScheduleTemplate", new[] { "Guid" });
             DropIndex("dbo.GroupMemberScheduleTemplate", new[] { "ModifiedByPersonAliasId" });
             DropIndex("dbo.GroupMemberScheduleTemplate", new[] { "CreatedByPersonAliasId" });
@@ -105,8 +114,9 @@ namespace Rock.Migrations
             DropIndex("dbo.GroupType", new[] { "ScheduleCancellationWorkflowTypeId" });
             DropIndex("dbo.GroupType", new[] { "ScheduleReminderCommunicationTemplateId" });
             DropIndex("dbo.GroupType", new[] { "ScheduledCommunicationTemplateId" });
+            DropIndex("dbo.GroupLocationScheduleConfig", new[] { "ScheduleId" });
+            DropIndex("dbo.GroupLocationScheduleConfig", new[] { "GroupLocationId" });
             DropIndex("dbo.Group", new[] { "ScheduleCancellationPersonAliasId" });
-            DropColumn("dbo.GroupLocationSchedule", "MinimumCapacity");
             DropColumn("dbo.GroupType", "RequiresReasonIfDeclineSchedule");
             DropColumn("dbo.GroupType", "ScheduleReminderEmailOffsetDays");
             DropColumn("dbo.GroupType", "ScheduleConfirmationEmailOffsetDays");
@@ -118,8 +128,7 @@ namespace Rock.Migrations
             DropColumn("dbo.Group", "AttendanceRecordRequiredForCheckIn");
             DropColumn("dbo.Group", "SchedulingMustMeetRequirements");
             DropTable("dbo.GroupMemberScheduleTemplate");
-            AddForeignKey("dbo.GroupLocationSchedule", "ScheduleId", "dbo.Schedule", "Id", cascadeDelete: true);
-            AddForeignKey("dbo.GroupLocationSchedule", "GroupLocationId", "dbo.GroupLocation", "Id", cascadeDelete: true);
+            DropTable("dbo.GroupLocationScheduleConfig");
         }
     }
 }

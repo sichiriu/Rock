@@ -28,6 +28,7 @@ using Humanizer;
 using Rock.Data;
 using Rock.Transactions;
 using Rock.Web.Cache;
+using Z.EntityFramework.Plus;
 
 namespace Rock.Model
 {
@@ -178,6 +179,34 @@ namespace Rock.Model
         [DataMember]
         public int? ArchivedByPersonAliasId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="GroupMember.ScheduleTemplate"/>
+        /// </summary>
+        /// <value>
+        /// The schedule template identifier.
+        /// </value>
+        [DataMember]
+        public int? ScheduleTemplateId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedule start date to base the schedule off of. See <see cref="ScheduleTemplate"/>.
+        /// </summary>
+        /// <value>
+        /// The schedule start date.
+        /// </value>
+        [DataMember]
+        [Column( TypeName = "Date" )]
+        public DateTime? ScheduleStartDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of days prior to the schedule to send a reminder email. See also <seealso cref="GroupType.ScheduleConfirmationEmailOffsetDays"/>.
+        /// </summary>
+        /// <value>
+        /// The schedule reminder email offset days.
+        /// </value>
+        [DataMember]
+        public int? ScheduleReminderEmailOffsetDays { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -226,6 +255,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual ICollection<GroupMemberRequirement> GroupMemberRequirements { get; set; } = new Collection<GroupMemberRequirement>();
+
+        /// <summary>
+        /// Gets or sets the GroupMemberScheduleTemplate. 
+        /// </summary>
+        /// <value>
+        /// The schedule template.
+        /// </value>
+        [DataMember]
+        public virtual GroupMemberScheduleTemplate ScheduleTemplate { get; set; }
 
         /// <summary>
         /// Gets or sets the person history changes.
@@ -916,6 +954,7 @@ namespace Rock.Model
             this.HasRequired( p => p.Group ).WithMany( p => p.Members ).HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.GroupRole ).WithMany().HasForeignKey( p => p.GroupRoleId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ArchivedByPersonAlias ).WithMany().HasForeignKey( p => p.ArchivedByPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ScheduleTemplate ).WithMany().HasForeignKey( p => p.ScheduleTemplateId ).WillCascadeOnDelete( false );
 
             // Tell EF that we never want archived group members. 
             // This will prevent archived members from being included in any GroupMember queries.
@@ -975,7 +1014,7 @@ namespace Rock.Model
     #endregion
 
     /// <summary>
-    /// Helper class for tracking changes
+    /// Helper class for tracking group member changes
     /// </summary>
     public class HistoryItem
     {
