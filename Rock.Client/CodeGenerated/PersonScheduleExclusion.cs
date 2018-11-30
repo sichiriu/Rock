@@ -27,12 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for GroupLocation that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for PersonScheduleExclusion that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class GroupLocationEntity
+    public partial class PersonScheduleExclusionEntity
     {
         /// <summary />
         public int Id { get; set; }
+
+        /// <summary />
+        public DateTime EndDate { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -41,22 +44,7 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public int GroupId { get; set; }
-
-        /// <summary />
-        public int? GroupLocationTypeValueId { get; set; }
-
-        /// <summary />
-        public int? GroupMemberPersonAliasId { get; set; }
-
-        /// <summary />
-        public bool IsMailingLocation { get; set; }
-
-        /// <summary />
-        public bool IsMappedLocation { get; set; }
-
-        /// <summary />
-        public int LocationId { get; set; }
+        public int? GroupId { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -64,7 +52,16 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public int Order { get; set; }
+        public int? ParentPersonScheduleExclusionId { get; set; }
+
+        /// <summary />
+        public int? PersonAliasId { get; set; }
+
+        /// <summary />
+        public DateTime StartDate { get; set; }
+
+        /// <summary />
+        public string Title { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -93,22 +90,21 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source GroupLocation object
+        /// Copies the base properties from a source PersonScheduleExclusion object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( GroupLocation source )
+        public void CopyPropertiesFrom( PersonScheduleExclusion source )
         {
             this.Id = source.Id;
+            this.EndDate = source.EndDate;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupId = source.GroupId;
-            this.GroupLocationTypeValueId = source.GroupLocationTypeValueId;
-            this.GroupMemberPersonAliasId = source.GroupMemberPersonAliasId;
-            this.IsMailingLocation = source.IsMailingLocation;
-            this.IsMappedLocation = source.IsMappedLocation;
-            this.LocationId = source.LocationId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Order = source.Order;
+            this.ParentPersonScheduleExclusionId = source.ParentPersonScheduleExclusionId;
+            this.PersonAliasId = source.PersonAliasId;
+            this.StartDate = source.StartDate;
+            this.Title = source.Title;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -120,21 +116,21 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for GroupLocation that includes all the fields that are available for GETs. Use this for GETs (use GroupLocationEntity for POST/PUTs)
+    /// Client model for PersonScheduleExclusion that includes all the fields that are available for GETs. Use this for GETs (use PersonScheduleExclusionEntity for POST/PUTs)
     /// </summary>
-    public partial class GroupLocation : GroupLocationEntity
+    public partial class PersonScheduleExclusion : PersonScheduleExclusionEntity
     {
         /// <summary />
-        public ICollection<GroupLocationScheduleConfig> GroupLocationScheduleConfigs { get; set; }
+        public ICollection<PersonScheduleExclusion> ChildPersonScheduleExclusions { get; set; }
 
         /// <summary />
-        public DefinedValue GroupLocationTypeValue { get; set; }
+        public Group Group { get; set; }
 
         /// <summary />
-        public Location Location { get; set; }
+        public PersonScheduleExclusion ParentPersonScheduleExclusion { get; set; }
 
         /// <summary />
-        public ICollection<Schedule> Schedules { get; set; }
+        public PersonAlias PersonAlias { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

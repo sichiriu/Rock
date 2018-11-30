@@ -69,6 +69,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, GroupHistorical.FriendlyTypeName );
                 return false;
             }  
+ 
+            if ( new Service<GroupMemberScheduleTemplate>( Context ).Queryable().Any( a => a.GroupTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, GroupMemberScheduleTemplate.FriendlyTypeName );
+                return false;
+            }  
             
             // ignoring GroupRequirement,GroupTypeId 
  
@@ -154,10 +160,17 @@ namespace Rock.Model
             target.IgnorePersonInactivated = source.IgnorePersonInactivated;
             target.InheritedGroupTypeId = source.InheritedGroupTypeId;
             target.IsIndexEnabled = source.IsIndexEnabled;
+            target.IsSchedulingEnabled = source.IsSchedulingEnabled;
             target.IsSystem = source.IsSystem;
             target.LocationSelectionMode = source.LocationSelectionMode;
             target.Name = source.Name;
             target.Order = source.Order;
+            target.RequiresReasonIfDeclineSchedule = source.RequiresReasonIfDeclineSchedule;
+            target.ScheduleCancellationWorkflowTypeId = source.ScheduleCancellationWorkflowTypeId;
+            target.ScheduleConfirmationEmailOffsetDays = source.ScheduleConfirmationEmailOffsetDays;
+            target.ScheduledCommunicationTemplateId = source.ScheduledCommunicationTemplateId;
+            target.ScheduleReminderCommunicationTemplateId = source.ScheduleReminderCommunicationTemplateId;
+            target.ScheduleReminderEmailOffsetDays = source.ScheduleReminderEmailOffsetDays;
             target.SendAttendanceReminder = source.SendAttendanceReminder;
             target.ShowConnectionStatus = source.ShowConnectionStatus;
             target.ShowInGroupList = source.ShowInGroupList;

@@ -27,9 +27,9 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for GroupLocation that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for GroupMemberAssignment that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class GroupLocationEntity
+    public partial class GroupMemberAssignmentEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -41,19 +41,7 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public int GroupId { get; set; }
-
-        /// <summary />
-        public int? GroupLocationTypeValueId { get; set; }
-
-        /// <summary />
-        public int? GroupMemberPersonAliasId { get; set; }
-
-        /// <summary />
-        public bool IsMailingLocation { get; set; }
-
-        /// <summary />
-        public bool IsMappedLocation { get; set; }
+        public int GroupMemberId { get; set; }
 
         /// <summary />
         public int LocationId { get; set; }
@@ -64,7 +52,7 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public int Order { get; set; }
+        public int ScheduleId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -93,22 +81,18 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source GroupLocation object
+        /// Copies the base properties from a source GroupMemberAssignment object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( GroupLocation source )
+        public void CopyPropertiesFrom( GroupMemberAssignment source )
         {
             this.Id = source.Id;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.GroupId = source.GroupId;
-            this.GroupLocationTypeValueId = source.GroupLocationTypeValueId;
-            this.GroupMemberPersonAliasId = source.GroupMemberPersonAliasId;
-            this.IsMailingLocation = source.IsMailingLocation;
-            this.IsMappedLocation = source.IsMappedLocation;
+            this.GroupMemberId = source.GroupMemberId;
             this.LocationId = source.LocationId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Order = source.Order;
+            this.ScheduleId = source.ScheduleId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -120,21 +104,15 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for GroupLocation that includes all the fields that are available for GETs. Use this for GETs (use GroupLocationEntity for POST/PUTs)
+    /// Client model for GroupMemberAssignment that includes all the fields that are available for GETs. Use this for GETs (use GroupMemberAssignmentEntity for POST/PUTs)
     /// </summary>
-    public partial class GroupLocation : GroupLocationEntity
+    public partial class GroupMemberAssignment : GroupMemberAssignmentEntity
     {
-        /// <summary />
-        public ICollection<GroupLocationScheduleConfig> GroupLocationScheduleConfigs { get; set; }
-
-        /// <summary />
-        public DefinedValue GroupLocationTypeValue { get; set; }
-
         /// <summary />
         public Location Location { get; set; }
 
         /// <summary />
-        public ICollection<Schedule> Schedules { get; set; }
+        public Schedule Schedule { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

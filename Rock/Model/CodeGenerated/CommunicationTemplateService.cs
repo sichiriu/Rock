@@ -53,6 +53,18 @@ namespace Rock.Model
             errorMessage = string.Empty;
             
             // ignoring Communication,CommunicationTemplateId 
+ 
+            if ( new Service<GroupType>( Context ).Queryable().Any( a => a.ScheduledCommunicationTemplateId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", CommunicationTemplate.FriendlyTypeName, GroupType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<GroupType>( Context ).Queryable().Any( a => a.ScheduleReminderCommunicationTemplateId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", CommunicationTemplate.FriendlyTypeName, GroupType.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

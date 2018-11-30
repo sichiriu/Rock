@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
@@ -36,7 +35,6 @@ namespace Rock.Model
     [Analytics( false, false )]
     public partial class Attendance : Model<Attendance>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -189,6 +187,69 @@ namespace Rock.Model
         [DataMember]
         public string Note { get; set; }
 
+        /// <summary>
+        /// Gets or sets if the <see cref="PersonAlias"/> person is scheduled to attend.
+        /// </summary>
+        /// <value>
+        /// The scheduled to attend.
+        /// </value>
+        [DataMember]
+        public bool? ScheduledToAttend { get; set; }
+
+        /// <summary>
+        /// Gets or sets if the <see cref="PersonAlias"/> person has been requested to attend.
+        /// </summary>
+        /// <value>
+        /// The requested to attend.
+        /// </value>
+        [DataMember]
+        public bool? RequestedToAttend { get; set; }
+
+        /// <summary>
+        /// Gets or sets if a schedule confirmation has been sent to the <see cref="PersonAlias"/> person
+        /// </summary>
+        /// <value>
+        /// The schedule confirmation sent.
+        /// </value>
+        [DataMember]
+        public bool? ScheduleConfirmationSent { get; set; }
+
+        /// <summary>
+        /// Gets or sets if a schedule reminder has been sent to the <see cref="PersonAlias"/> person
+        /// </summary>
+        /// <value>
+        /// The schedule reminder sent.
+        /// </value>
+        [DataMember]
+        public bool? ScheduleReminderSent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="RSVP"/> date time.
+        /// </summary>
+        /// <value>
+        /// The RSVP date time.
+        /// </value>
+        [DataMember]
+        public DateTime? RSVPDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Reason that the <see cref="PersonAlias"/> person declined to attend
+        /// </summary>
+        /// <value>
+        /// The decline reason value identifier.
+        /// </value>
+        [DataMember]
+        public int? DeclineReasonValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person that scheduled the <see cref="PersonAlias"/> person to attend
+        /// </summary>
+        /// <value>
+        /// The scheduled by person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? ScheduledByPersonAliasId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -264,6 +325,24 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual DefinedValue Qualifier { get; set; }
+
+        /// <summary>
+        /// Gets or sets the decline reason value.
+        /// </summary>
+        /// <value>
+        /// The decline reason value.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue DeclineReasonValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scheduled by person alias.
+        /// </summary>
+        /// <value>
+        /// The scheduled by person alias.
+        /// </value>
+        [DataMember]
+        public virtual PersonAlias ScheduledByPersonAlias { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this attendance is currently checked in.
@@ -498,7 +577,6 @@ namespace Rock.Model
             }
         }
 
-
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Location"/> where the <see cref="Rock.Model.Person"/> attended.
         /// </summary>
@@ -630,8 +708,6 @@ namespace Rock.Model
                                 attendanceOccurrenceRockContext.SaveChanges();
                                 this.OccurrenceId = attendanceOccurrence.Id;
                             }
-
-
                         }
                     }
                     else if ( _updatedObsoleteDidNotOccur )
@@ -655,10 +731,12 @@ namespace Rock.Model
         public override string ToString()
         {
             if ( !DidAttend.HasValue )
+            {
                 return string.Empty;
+            }
 
             var sb = new StringBuilder();
-            sb.Append( ( PersonAlias?.Person != null ) ? PersonAlias.Person.ToStringSafe() + " " : "" );
+            sb.Append( ( PersonAlias?.Person != null ) ? PersonAlias.Person.ToStringSafe() + " " : string.Empty );
             sb.Append( DidAttend.Value ? "attended " : "did not attend " );
             sb.Append( Occurrence?.Group?.ToStringSafe() );
             if ( DidAttend.Value )
@@ -717,6 +795,8 @@ namespace Rock.Model
             this.HasOptional( a => a.SearchResultGroup ).WithMany().HasForeignKey( p => p.SearchResultGroupId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.Qualifier ).WithMany().HasForeignKey( p => p.QualifierValueId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.AttendanceCode ).WithMany( c => c.Attendances ).HasForeignKey( a => a.AttendanceCodeId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.DeclineReasonValue ).WithMany().HasForeignKey( a => a.DeclineReasonValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.ScheduledByPersonAlias ).WithMany().HasForeignKey( p => p.ScheduledByPersonAliasId ).WillCascadeOnDelete( false );
         }
     }
 
@@ -743,9 +823,7 @@ namespace Rock.Model
         /// Maybe
         /// </summary>
         Maybe = 2,
-
     }
 
     #endregion
-
 }

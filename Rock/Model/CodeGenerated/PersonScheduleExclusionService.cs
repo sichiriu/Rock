@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// GroupMember Service class
+    /// PersonScheduleExclusion Service class
     /// </summary>
-    public partial class GroupMemberService : Service<GroupMember>
+    public partial class PersonScheduleExclusionService : Service<PersonScheduleExclusion>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupMemberService"/> class
+        /// Initializes a new instance of the <see cref="PersonScheduleExclusionService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public GroupMemberService(RockContext context) : base(context)
+        public PersonScheduleExclusionService(RockContext context) : base(context)
         {
         }
 
@@ -48,23 +48,15 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( GroupMember item, out string errorMessage )
+        public bool CanDelete( PersonScheduleExclusion item, out string errorMessage )
         {
             errorMessage = string.Empty;
  
-            if ( new Service<GroupMemberAssignment>( Context ).Queryable().Any( a => a.GroupMemberId == item.Id ) )
+            if ( new Service<PersonScheduleExclusion>( Context ).Queryable().Any( a => a.ParentPersonScheduleExclusionId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupMember.FriendlyTypeName, GroupMemberAssignment.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} contains one or more child {1}.", PersonScheduleExclusion.FriendlyTypeName, PersonScheduleExclusion.FriendlyTypeName.Pluralize().ToLower() );
                 return false;
             }  
- 
-            if ( new Service<GroupMemberHistorical>( Context ).Queryable().Any( a => a.GroupMemberId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupMember.FriendlyTypeName, GroupMemberHistorical.FriendlyTypeName );
-                return false;
-            }  
-            
-            // ignoring RegistrationRegistrant,GroupMemberId 
             return true;
         }
     }
@@ -72,55 +64,44 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class GroupMemberExtensionMethods
+    public static partial class PersonScheduleExclusionExtensionMethods
     {
         /// <summary>
-        /// Clones this GroupMember object to a new GroupMember object
+        /// Clones this PersonScheduleExclusion object to a new PersonScheduleExclusion object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static GroupMember Clone( this GroupMember source, bool deepCopy )
+        public static PersonScheduleExclusion Clone( this PersonScheduleExclusion source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as GroupMember;
+                return source.Clone() as PersonScheduleExclusion;
             }
             else
             {
-                var target = new GroupMember();
+                var target = new PersonScheduleExclusion();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another GroupMember object to this GroupMember object
+        /// Copies the properties from another PersonScheduleExclusion object to this PersonScheduleExclusion object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this GroupMember target, GroupMember source )
+        public static void CopyPropertiesFrom( this PersonScheduleExclusion target, PersonScheduleExclusion source )
         {
             target.Id = source.Id;
-            target.ArchivedByPersonAliasId = source.ArchivedByPersonAliasId;
-            target.ArchivedDateTime = source.ArchivedDateTime;
-            target.DateTimeAdded = source.DateTimeAdded;
+            target.EndDate = source.EndDate;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
-            target.GroupMemberStatus = source.GroupMemberStatus;
-            target.GroupOrder = source.GroupOrder;
-            target.GroupRoleId = source.GroupRoleId;
-            target.GuestCount = source.GuestCount;
-            target.InactiveDateTime = source.InactiveDateTime;
-            target.IsArchived = source.IsArchived;
-            target.IsNotified = source.IsNotified;
-            target.IsSystem = source.IsSystem;
-            target.Note = source.Note;
-            target.PersonId = source.PersonId;
-            target.ScheduleReminderEmailOffsetDays = source.ScheduleReminderEmailOffsetDays;
-            target.ScheduleStartDate = source.ScheduleStartDate;
-            target.ScheduleTemplateId = source.ScheduleTemplateId;
+            target.ParentPersonScheduleExclusionId = source.ParentPersonScheduleExclusionId;
+            target.PersonAliasId = source.PersonAliasId;
+            target.StartDate = source.StartDate;
+            target.Title = source.Title;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

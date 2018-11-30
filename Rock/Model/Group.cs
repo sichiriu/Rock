@@ -143,13 +143,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [Previewable]
-        public bool IsActive
-        {
-            get { return _isActive; }
-            set { _isActive = value; }
-        }
-
-        private bool _isActive = true;
+        public bool IsActive { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the display order of the group in the group list and group hierarchy. The lower the number the higher the 
@@ -190,13 +184,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        public bool IsPublic
-        {
-            get { return _isPublic; }
-            set { _isPublic = value; }
-        }
-
-        private bool _isPublic = true;
+        public bool IsPublic { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the group capacity.
@@ -354,13 +342,7 @@ namespace Rock.Model
         /// A collection of Groups that are children of this group.
         /// </value>
         [LavaInclude]
-        public virtual ICollection<Group> Groups
-        {
-            get { return _groups ?? ( _groups = new Collection<Group>() ); }
-            set { _groups = value; }
-        }
-
-        private ICollection<Group> _groups;
+        public virtual ICollection<Group> Groups { get; set; } = new Collection<Group>();
 
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.GroupMember">GroupMembers</see> who are associated with the Group.
@@ -370,13 +352,7 @@ namespace Rock.Model
         /// A collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> who are associated with the Group.
         /// </value>
         [DataMember]
-        public virtual ICollection<GroupMember> Members
-        {
-            get { return _members ?? ( _members = new Collection<GroupMember>() ); }
-            set { _members = value; }
-        }
-
-        private ICollection<GroupMember> _members;
+        public virtual ICollection<GroupMember> Members { get; set; } = new Collection<GroupMember>();
 
         /// <summary>
         /// Gets or Sets the <see cref="Rock.Model.GroupLocation">GroupLocations</see> that are associated with the Group.
@@ -385,13 +361,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.GroupLocation">GroupLocations</see> that are associated with the Group.
         /// </value>
         [DataMember]
-        public virtual ICollection<GroupLocation> GroupLocations
-        {
-            get { return _groupLocations ?? ( _groupLocations = new Collection<GroupLocation>() ); }
-            set { _groupLocations = value; }
-        }
-
-        private ICollection<GroupLocation> _groupLocations;
+        public virtual ICollection<GroupLocation> GroupLocations { get; set; } = new Collection<GroupLocation>();
 
         /// <summary>
         /// Gets or sets the group requirements (not including GroupRequirements from the GroupType)
@@ -400,13 +370,7 @@ namespace Rock.Model
         /// The group requirements.
         /// </value>
         [DataMember]
-        public virtual ICollection<GroupRequirement> GroupRequirements
-        {
-            get { return _groupsRequirements ?? ( _groupsRequirements = new Collection<GroupRequirement>() ); }
-            set { _groupsRequirements = value; }
-        }
-
-        private ICollection<GroupRequirement> _groupsRequirements;
+        public virtual ICollection<GroupRequirement> GroupRequirements { get; set; } = new Collection<GroupRequirement>();
 
         /// <summary>
         /// Gets or sets the group member workflow triggers.
@@ -415,13 +379,7 @@ namespace Rock.Model
         /// The group member workflow triggers.
         /// </value>
         [LavaInclude]
-        public virtual ICollection<GroupMemberWorkflowTrigger> GroupMemberWorkflowTriggers
-        {
-            get { return _triggers ?? ( _triggers = new Collection<GroupMemberWorkflowTrigger>() ); }
-            set { _triggers = value; }
-        }
-
-        private ICollection<GroupMemberWorkflowTrigger> _triggers;
+        public virtual ICollection<GroupMemberWorkflowTrigger> GroupMemberWorkflowTriggers { get; set; } = new Collection<GroupMemberWorkflowTrigger>();
 
         /// <summary>
         /// Gets or sets the group syncs.
@@ -430,13 +388,7 @@ namespace Rock.Model
         /// The group syncs.
         /// </value>
         [DataMember]
-        public virtual ICollection<GroupSync> GroupSyncs
-        {
-            get { return _groupSyncs ?? ( _groupSyncs = new Collection<GroupSync>() ); }
-            set { _groupSyncs = value; }
-        }
-
-        private ICollection<GroupSync> _groupSyncs;
+        public virtual ICollection<GroupSync> GroupSyncs { get; set; } = new Collection<GroupSync>();
 
         /// <summary>
         /// Gets or sets the linkages.
@@ -445,13 +397,7 @@ namespace Rock.Model
         /// The linkages.
         /// </value>
         [LavaInclude]
-        public virtual ICollection<EventItemOccurrenceGroupMap> Linkages
-        {
-            get { return _linkages ?? ( _linkages = new Collection<EventItemOccurrenceGroupMap>() ); }
-            set { _linkages = value; }
-        }
-
-        private ICollection<EventItemOccurrenceGroupMap> _linkages;
+        public virtual ICollection<EventItemOccurrenceGroupMap> Linkages { get; set; } = new Collection<EventItemOccurrenceGroupMap>();
 
         /// <summary>
         /// Gets the securable object that security permissions should be inherited from.  If block is located on a page
@@ -497,13 +443,7 @@ namespace Rock.Model
         /// </value>
         /// <exception cref="System.NotImplementedException"></exception>
         [NotMapped]
-        public bool AllowsInteractiveBulkIndexing
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public bool AllowsInteractiveBulkIndexing => true;
 
         /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
@@ -525,6 +465,7 @@ namespace Rock.Model
                 return _supportedActions;
             }
         }
+
         private Dictionary<string, string> _supportedActions;
 
         /// <summary>
@@ -717,8 +658,6 @@ namespace Rock.Model
 
             return result;
         }
-
-
 
         /// <summary>
         /// Method that will be called on an entity immediately before the item is saved by context
@@ -1106,10 +1045,24 @@ namespace Rock.Model
 
     #region Enumerations
 
+    /// <summary>
+    /// Controls what options a person is shown when checking in
+    /// </summary>
     public enum AttendanceRecordRequiredForCheckIn
     {
+        /// <summary>
+        /// All teams are shown
+        /// </summary>
         AllShow,
+
+        /// <summary>
+        /// Person cannot check into group unless they have been scheduled
+        /// </summary>
         RequireAttendanceRecord,
+
+        /// <summary>
+        /// The group is preselected if the person is scheduled for this team
+        /// </summary>
         RequireAttendanceRecordAsPreference
     }
 

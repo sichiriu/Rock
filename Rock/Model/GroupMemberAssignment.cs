@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -24,42 +23,43 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// GroupMemberScheduleTemplate is the table used to make patterns that indicates the type of schedule a Scheduled GroupMember follows ( like Every Week, Every Other Week, etc )
+    /// 
     /// </summary>
     [RockDomain( "Group" )]
-    [Table( "GroupMemberScheduleTemplate" )]
+    [Table( "GroupMemberAssignment" )]
     [DataContract]
-    public class GroupMemberScheduleTemplate : Model<GroupMemberScheduleTemplate>
+    public class GroupMemberAssignment : Model<GroupMemberAssignment>
     {
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the name.
+        /// Gets or sets the group member identifier.
         /// </summary>
         /// <value>
-        /// The name.
-        /// </value>
-        [Required]
-        [MaxLength( 100 )]
-        [DataMember( IsRequired = true )]
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Gets or sets the GroupType that is allowed to use this template (or null if any GroupType can use it)
-        /// </summary>
-        /// <value>
-        /// The group type identifier.
+        /// The group member identifier.
         /// </value>
         [DataMember]
-        public int? GroupTypeId { get; set; }
+        [Index( "IX_GroupMemberIdLocationIdScheduleId", IsUnique = true, Order = 0 )]
+        public int GroupMemberId { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule, which indicates the Schedule that a GroupMember is associated with (Every Week, Every Other Week, etc)
+        /// Gets or sets the location identifier.
+        /// </summary>
+        /// <value>
+        /// The location identifier.
+        /// </value>
+        [DataMember]
+        [Index( "IX_GroupMemberIdLocationIdScheduleId", IsUnique = true, Order = 1 )]
+        public int LocationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedule identifier.
         /// </summary>
         /// <value>
         /// The schedule identifier.
         /// </value>
         [DataMember]
+        [Index( "IX_GroupMemberIdLocationIdScheduleId", IsUnique = true, Order = 2 )]
         public int ScheduleId { get; set; }
 
         #endregion Entity Properties
@@ -67,16 +67,24 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the GroupType that is allowed to use this template (or null if any GroupType can use it)
+        /// Gets or sets the group member.
         /// </summary>
         /// <value>
-        /// The type of the group.
+        /// The group member.
         /// </value>
-        [DataMember]
-        public virtual GroupType GroupType { get; set; }
+        public virtual GroupMember GroupMember { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule, which indicates the Schedule that a GroupMember is associated with (Every Week, Every Other Week, etc)
+        /// Gets or sets the location.
+        /// </summary>
+        /// <value>
+        /// The location.
+        /// </value>
+        [DataMember]
+        public virtual Location Location { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedule.
         /// </summary>
         /// <value>
         /// The schedule.
@@ -87,22 +95,19 @@ namespace Rock.Model
         #endregion Virtual Properties
     }
 
-    #region Entity Configuration
-
     /// <summary>
-    /// Configuration Class
+    /// GroupMemberAssignment EntityTypeConfiguration
     /// </summary>
-    public partial class GroupMemberScheduleTemplateConfiguration : EntityTypeConfiguration<GroupMemberScheduleTemplate>
+    public class GroupMemberAssignmentConfiguration : EntityTypeConfiguration<GroupMemberAssignment>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupMemberScheduleTemplateConfiguration" /> class.
+        /// Initializes a new instance of the <see cref="GroupMemberAssignmentConfiguration"/> class.
         /// </summary>
-        public GroupMemberScheduleTemplateConfiguration()
+        public GroupMemberAssignmentConfiguration()
         {
-            this.HasOptional( a => a.GroupType ).WithMany().HasForeignKey( a => a.GroupTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( a => a.GroupMember ).WithMany( a => a.GroupMemberAssignments ).HasForeignKey( a => a.GroupMemberId ).WillCascadeOnDelete( false );
             this.HasRequired( a => a.Schedule ).WithMany().HasForeignKey( a => a.ScheduleId ).WillCascadeOnDelete( false );
+            this.HasRequired( a => a.Location ).WithMany().HasForeignKey( a => a.LocationId ).WillCascadeOnDelete( false );
         }
     }
-
-    #endregion Entity Configuration
 }

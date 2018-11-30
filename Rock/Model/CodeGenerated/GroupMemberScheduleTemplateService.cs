@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// GroupMember Service class
+    /// GroupMemberScheduleTemplate Service class
     /// </summary>
-    public partial class GroupMemberService : Service<GroupMember>
+    public partial class GroupMemberScheduleTemplateService : Service<GroupMemberScheduleTemplate>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupMemberService"/> class
+        /// Initializes a new instance of the <see cref="GroupMemberScheduleTemplateService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public GroupMemberService(RockContext context) : base(context)
+        public GroupMemberScheduleTemplateService(RockContext context) : base(context)
         {
         }
 
@@ -48,23 +48,15 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( GroupMember item, out string errorMessage )
+        public bool CanDelete( GroupMemberScheduleTemplate item, out string errorMessage )
         {
             errorMessage = string.Empty;
  
-            if ( new Service<GroupMemberAssignment>( Context ).Queryable().Any( a => a.GroupMemberId == item.Id ) )
+            if ( new Service<GroupMember>( Context ).Queryable().Any( a => a.ScheduleTemplateId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupMember.FriendlyTypeName, GroupMemberAssignment.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupMemberScheduleTemplate.FriendlyTypeName, GroupMember.FriendlyTypeName );
                 return false;
             }  
- 
-            if ( new Service<GroupMemberHistorical>( Context ).Queryable().Any( a => a.GroupMemberId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupMember.FriendlyTypeName, GroupMemberHistorical.FriendlyTypeName );
-                return false;
-            }  
-            
-            // ignoring RegistrationRegistrant,GroupMemberId 
             return true;
         }
     }
@@ -72,55 +64,41 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class GroupMemberExtensionMethods
+    public static partial class GroupMemberScheduleTemplateExtensionMethods
     {
         /// <summary>
-        /// Clones this GroupMember object to a new GroupMember object
+        /// Clones this GroupMemberScheduleTemplate object to a new GroupMemberScheduleTemplate object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static GroupMember Clone( this GroupMember source, bool deepCopy )
+        public static GroupMemberScheduleTemplate Clone( this GroupMemberScheduleTemplate source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as GroupMember;
+                return source.Clone() as GroupMemberScheduleTemplate;
             }
             else
             {
-                var target = new GroupMember();
+                var target = new GroupMemberScheduleTemplate();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another GroupMember object to this GroupMember object
+        /// Copies the properties from another GroupMemberScheduleTemplate object to this GroupMemberScheduleTemplate object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this GroupMember target, GroupMember source )
+        public static void CopyPropertiesFrom( this GroupMemberScheduleTemplate target, GroupMemberScheduleTemplate source )
         {
             target.Id = source.Id;
-            target.ArchivedByPersonAliasId = source.ArchivedByPersonAliasId;
-            target.ArchivedDateTime = source.ArchivedDateTime;
-            target.DateTimeAdded = source.DateTimeAdded;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.GroupId = source.GroupId;
-            target.GroupMemberStatus = source.GroupMemberStatus;
-            target.GroupOrder = source.GroupOrder;
-            target.GroupRoleId = source.GroupRoleId;
-            target.GuestCount = source.GuestCount;
-            target.InactiveDateTime = source.InactiveDateTime;
-            target.IsArchived = source.IsArchived;
-            target.IsNotified = source.IsNotified;
-            target.IsSystem = source.IsSystem;
-            target.Note = source.Note;
-            target.PersonId = source.PersonId;
-            target.ScheduleReminderEmailOffsetDays = source.ScheduleReminderEmailOffsetDays;
-            target.ScheduleStartDate = source.ScheduleStartDate;
-            target.ScheduleTemplateId = source.ScheduleTemplateId;
+            target.GroupTypeId = source.GroupTypeId;
+            target.Name = source.Name;
+            target.ScheduleId = source.ScheduleId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -274,6 +274,15 @@ namespace Rock.Model
         [NotMapped]
         private List<HistoryItem> HistoryChanges { get; set; }
 
+        /// <summary>
+        /// Gets or sets the group member assignments.
+        /// </summary>
+        /// <value>
+        /// The group member assignments.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<GroupMemberAssignment> GroupMemberAssignments { get; set; } = new Collection<GroupMemberAssignment>();
+
         #endregion
 
         #region Methods
