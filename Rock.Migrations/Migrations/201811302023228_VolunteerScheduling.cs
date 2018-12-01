@@ -169,8 +169,12 @@ namespace Rock.Migrations
             AddForeignKey("dbo.Attendance", "DeclineReasonValueId", "dbo.DefinedValue", "Id");
             AddForeignKey("dbo.Attendance", "ScheduledByPersonAliasId", "dbo.PersonAlias", "Id");
 
-            // TODO: Volunteer Schedule Decline Reasons
-            // RockMigrationHelper.AddDefinedType()
+            // Volunteer Schedule Decline Reasons
+            RockMigrationHelper.AddDefinedType( "Group", "Volunteer Schedule Decline Reason", "List of all possible schedule decline reasons.", "70C9F9C4-20CC-43DD-888D-9243853A0E52", @"" );
+            RockMigrationHelper.UpdateDefinedValue( "70C9F9C4-20CC-43DD-888D-9243853A0E52", "Family Emergency", "", "7533A32D-CC7B-4218-A1CA-030FB4F2473B", false );
+            RockMigrationHelper.UpdateDefinedValue( "70C9F9C4-20CC-43DD-888D-9243853A0E52", "Have to Work", "", "8B9BF3F5-11CF-4E33-98A0-D48067A18103", false );
+            RockMigrationHelper.UpdateDefinedValue( "70C9F9C4-20CC-43DD-888D-9243853A0E52", "On Vacation / Out of Town", "", "BB2F0712-5C57-40E9-83BF-68876890EC7A", false );
+            RockMigrationHelper.UpdateDefinedValue( "70C9F9C4-20CC-43DD-888D-9243853A0E52", "Serving Elsewhere", "", "BBD314E2-B65A-4C23-8AE1-1ADFBD58C4B4", false );
         }
         
         /// <summary>

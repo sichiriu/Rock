@@ -239,6 +239,7 @@ namespace Rock.Model
         /// The decline reason value identifier.
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.VOLUNTEER_SCHEDULE_DECLINE_REASON )]
         public int? DeclineReasonValueId { get; set; }
 
         /// <summary>
