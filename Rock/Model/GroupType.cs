@@ -614,7 +614,7 @@ namespace Rock.Model
         #endregion Entity Properties
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is scheduling enabled for groups of this type
+        /// Gets or sets a value indicating whether scheduling is enabled for groups of this type
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is scheduling enabled; otherwise, <c>false</c>.
@@ -632,7 +632,7 @@ namespace Rock.Model
         public int? ScheduledCommunicationTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the communication template to use when sending a Schedule Reminder
+        /// Gets or sets the communication template to use when sending a schedule reminder
         /// </summary>
         /// <value>
         /// The schedule reminder communication template identifier.
@@ -650,7 +650,7 @@ namespace Rock.Model
         public int? ScheduleCancellationWorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of days prior to the schedule to send a confirmation email. See also <seealso cref="GroupMember.ScheduleConfirmationEmailOffsetDays"/>.
+        /// Gets or sets the number of days prior to the schedule to send a confirmation email.
         /// </summary>
         /// <value>
         /// The schedule confirmation email offset days.
@@ -659,7 +659,7 @@ namespace Rock.Model
         public int? ScheduleConfirmationEmailOffsetDays { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of days prior to the schedule to send a reminder email.
+        /// Gets or sets the number of days prior to the schedule to send a reminder email. See also <seealso cref="GroupMember.ScheduleReminderEmailOffsetDays"/>.
         /// </summary>
         /// <value>
         /// The schedule reminder email offset days.

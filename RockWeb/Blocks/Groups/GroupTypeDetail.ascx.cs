@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Type Detail" )]
     [Category( "Groups" )]
     [Description( "Displays the details of the given group type for editing." )]
-    public partial class GroupTypes : RockBlock, IDetailBlock
+    public partial class GroupTypeDetail : RockBlock, IDetailBlock
     {
         #region Properties
 
@@ -523,6 +523,15 @@ namespace RockWeb.Blocks.Groups
             groupType.AllowSpecificGroupMemberWorkflows = cbAllowSpecificGrpMemWorkFlows.Checked;
             groupType.GroupStatusDefinedTypeId = ddlGroupStatusDefinedType.SelectedValueAsInt();
 
+            // Scheduling
+            groupType.IsSchedulingEnabled = cbSchedulingEnabled.Checked;
+            groupType.ScheduledCommunicationTemplateId = ddlScheduledCommunicationTemplate.SelectedValue.AsIntegerOrNull();
+            groupType.RequiresReasonIfDeclineSchedule = cbRequiresReasonIfDeclineSchedule.Checked;
+            groupType.ScheduleConfirmationEmailOffsetDays = nbScheduleConfirmationEmailOffsetDays.Text.AsIntegerOrNull();
+            groupType.ScheduleCancellationWorkflowTypeId = wtpScheduleCancellationWorkflowType.SelectedValue.AsIntegerOrNull();
+            groupType.ScheduleReminderCommunicationTemplateId = ddlScheduleReminderCommunicationTemplate.SelectedValue.AsIntegerOrNull();
+            groupType.ScheduleReminderEmailOffsetDays = nbScheduleReminderEmailOffsetDays.Text.AsIntegerOrNull();
+
             // if GroupHistory is turned off, we'll delete group and group member history for this group type
             bool deleteGroupHistory = false;
             if ( groupType.EnableGroupHistory && cbEnableGroupHistory.Checked == false )
@@ -853,6 +862,16 @@ namespace RockWeb.Blocks.Groups
             ddlPrintTo.SetValue( (int)groupType.AttendancePrintTo );
             cbGroupAttendanceRequiresSchedule.Checked = groupType.GroupAttendanceRequiresSchedule;
             cbGroupAttendanceRequiresLocation.Checked = groupType.GroupAttendanceRequiresLocation;
+
+            // Scheduling
+            cbSchedulingEnabled.Checked = groupType.IsSchedulingEnabled;
+
+            ddlScheduledCommunicationTemplate.SetValue( groupType.ScheduledCommunicationTemplateId );
+            cbRequiresReasonIfDeclineSchedule.Checked = groupType.RequiresReasonIfDeclineSchedule;
+            nbScheduleConfirmationEmailOffsetDays.Text = groupType.ScheduleConfirmationEmailOffsetDays.ToString();
+            wtpScheduleCancellationWorkflowType.SetValue( groupType.ScheduleCancellationWorkflowTypeId );
+            ddlScheduleReminderCommunicationTemplate.SetValue( groupType.ScheduleReminderCommunicationTemplateId );
+            nbScheduleReminderEmailOffsetDays.Text = groupType.ScheduleReminderEmailOffsetDays.ToString();
 
             // Attributes
             gtpInheritedGroupType.Enabled = !groupType.IsSystem;
@@ -2817,7 +2836,5 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
-
-        
     }
 }

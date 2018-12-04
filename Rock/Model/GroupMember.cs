@@ -199,7 +199,7 @@ namespace Rock.Model
         public DateTime? ScheduleStartDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of days prior to the schedule to send a reminder email. See also <seealso cref="GroupType.ScheduleConfirmationEmailOffsetDays"/>.
+        /// Gets or sets the number of days prior to the schedule to send a reminder email. See also <seealso cref="GroupType.ScheduleReminderEmailOffsetDays"/>.
         /// </summary>
         /// <value>
         /// The schedule reminder email offset days.

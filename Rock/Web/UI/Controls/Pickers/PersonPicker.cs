@@ -317,7 +317,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the person's primary alias identifier.
+        /// Gets the selected person's primary alias identifier.
         /// </summary>
         /// <value>
         /// The person alias identifier.
@@ -326,7 +326,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                if (PersonId.HasValue)
+                if ( PersonId.HasValue )
                 {
                     using ( var rockContext = new RockContext() )
                     {
@@ -339,7 +339,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the selected value.
+        /// Gets or sets the Id of the selected person. See also <seealso cref="PersonId"/>.
         /// </summary>
         /// <value>
         /// The selected value.
@@ -483,7 +483,7 @@ namespace Rock.Web.UI.Controls
             _hfSelfPersonName.ID = "hfSelfPersonName";
 
             var rockBlock = this.RockBlock();
-            if ( rockBlock != null && rockBlock.CurrentPerson != null)
+            if ( rockBlock != null && rockBlock.CurrentPerson != null )
             {
                 _hfSelfPersonId.Value = rockBlock.CurrentPersonId.ToString();
                 _hfSelfPersonName.Value = rockBlock.CurrentPerson.ToString();

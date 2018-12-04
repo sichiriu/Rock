@@ -12,7 +12,7 @@
 
 <asp:UpdatePanel ID="upnlGroupDetail" runat="server">
     <ContentTemplate>
-        <Rock:NotificationBox ID="nbNotFoundOrArchived" runat="server" NotificationBoxType="Warning"  Visible="false" Text="That group does not exist or it has been archived."  />
+        <Rock:NotificationBox ID="nbNotFoundOrArchived" runat="server" NotificationBoxType="Warning" Visible="false" Text="That group does not exist or it has been archived." />
 
         <asp:Panel ID="pnlDetails" CssClass="js-group-panel" runat="server">
             <asp:HiddenField ID="hfGroupId" runat="server" />
@@ -83,7 +83,7 @@
                                     </div>
                                     <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
                                     <Rock:DefinedValuePicker ID="dvpGroupStatus" runat="server" Label="Status" />
-                                    <Rock:NumberBox ID="nbGroupCapacity" runat="server" Label="Group Capacity" NumberType="Integer" MinimumValue="0"  />
+                                    <Rock:NumberBox ID="nbGroupCapacity" runat="server" Label="Group Capacity" NumberType="Integer" MinimumValue="0" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
@@ -126,6 +126,20 @@
                                     </div>
                                 </div>
                             </asp:Panel>
+                        </Rock:PanelWidget>
+
+                        <Rock:PanelWidget ID="wpScheduling" runat="server" Title="Scheduling">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockCheckBox ID="cbSchedulingMustMeetRequirements" runat="server" Label="Scheduling Must Meet Requirements" Help="Indicates whether group members must meet the group member requirements before they can be scheduled." />
+
+                                    <Rock:RockDropDownList ID="ddlAttendanceRecordRequiredForCheckIn" runat="server" Label="Attendance Record Required For Check-in" Help="Determines if the person must be scheduled prior to checking in." />
+
+                                    <Rock:PersonPicker ID="ppScheduleCancellationPerson" runat="server" EnableSelfSelection="true" Label="Schedule Cancellation Person to Notify" Help="The person to notify when a person cancels." />
+                                </div>
+                                <div class="col-md-6">
+                                </div>
+                            </div>
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpGroupAttributes" runat="server" Title="Group Attribute Values">
@@ -331,10 +345,10 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:DataViewItemPicker ID="dvipSyncDataView" runat="server" Label="Sync Data View" Help="Select the Data View for the sync" required="true" ValidationGroup="GroupSyncSettings" />
+                        <Rock:DataViewItemPicker ID="dvipSyncDataView" runat="server" Label="Sync Data View" Help="Select the Data View for the sync" Required="true" ValidationGroup="GroupSyncSettings" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlGroupRoles" runat="server" Label="Group Role to Assign" Help="Select the role to assign the members added by the selected Data View" required="true" ValidationGroup="GroupSyncSettings" />
+                        <Rock:RockDropDownList ID="ddlGroupRoles" runat="server" Label="Group Role to Assign" Help="Select the role to assign the members added by the selected Data View" Required="true" ValidationGroup="GroupSyncSettings" />
                     </div>
                 </div>
                 <div class="row">
@@ -442,7 +456,7 @@
                     e.preventDefault();
                     Rock.dialogs.confirm('Are you sure you want to archive this group?', function (result) {
                         if (result) {
-                             window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                         }
                     });
                 });
